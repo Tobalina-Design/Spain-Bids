@@ -1,10 +1,10 @@
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import {
-  sunburstAniso, dialBase, drawDialPrint, drawRehaut, perlage, cotes, drawRotorText,
+  nautilusDialBase, drawDialPrint, drawRehaut, perlage, cotes, drawRotorText,
 } from './textures';
 
-/* Reloj procedural. Eje del reloj = Z, la esfera mira hacia +Z. 1 unidad ≈ 10 mm. */
+/* Reloj procedural — Patek Philippe Nautilus 5711/5712 */
+/* Eje del reloj = Z, la esfera mira hacia +Z. 1 unidad ≈ 10 mm. */
 
 export type LayerKey =
   | 'crystal' | 'hands' | 'dial' | 'case' | 'bracelet'
@@ -15,9 +15,9 @@ type MatRec = { m: THREE.MeshStandardMaterial; base: THREE.Color; env: number; o
 export type Layer = {
   key: LayerKey;
   group: THREE.Group;
-  base: number; // z montado
-  ex: number;   // z en despiece
-  d: number;    // orden de salida 0..1
+  base: number;
+  ex: number;
+  d: number;
   mats: MatRec[];
   bright: number;
 };
@@ -26,10 +26,10 @@ const TAU = Math.PI * 2;
 
 /* ---------- materiales ---------- */
 function polished(hex = 0xdadcdf, rough = 0.07) {
-  return new THREE.MeshPhysicalMaterial({ color: hex, metalness: 1, roughness: rough, clearcoat: 0.25, clearcoatRoughness: 0.05 });
+  return new THREE.MeshPhysicalMaterial({ color: hex, metalness: 1, roughness: rough, clearcoat: 0.3, clearcoatRoughness: 0.05 });
 }
-function brushed(hex = 0xc3c6ca, rough = 0.3, rot = 0) {
-  return new THREE.MeshPhysicalMaterial({ color: hex, metalness: 1, roughness: rough, anisotropy: 0.75, anisotropyRotation: rot });
+function brushed(hex = 0xc3c6ca, rough = 0.28, rot = 0) {
+  return new THREE.MeshPhysicalMaterial({ color: hex, metalness: 1, roughness: rough, anisotropy: 0.85, anisotropyRotation: rot });
 }
 function gilt(rough = 0.22) {
   return new THREE.MeshPhysicalMaterial({ color: 0xc2a36e, metalness: 1, roughness: rough });
@@ -67,46 +67,105 @@ function resample(pts: [number, number][], n: number) {
   }
   return out;
 }
-/* Bisel estriado (alternativa) */
-export function flutedBezel(flutes = 60) {
-  const prof = resample([[1.985, 0.3], [2.0, 0.42], [1.95, 0.56], [1.84, 0.63], [1.73, 0.61], [1.675, 0.52], [1.67, 0.42]], 28);
-  const P = prof.length;
-  const S = flutes * 10;
-  const pos: number[] = [];
-  const uv: number[] = [];
-  const idx: number[] = [];
-  const nrm2 = prof.map((_p, i) => {
-    const a = prof[Math.max(0, i - 1)];
-    const b = prof[Math.min(P - 1, i + 1)];
-    const dr = b[0] - a[0], dz = b[1] - a[1];
-    const l = Math.hypot(dr, dz) || 1;
-    return [dz / l, -dr / l];
-  });
-  for (let s = 0; s <= S; s++) {
-    const th = (s / S) * TAU;
-    const f = 1 - 2 * Math.abs(((th * flutes) / TAU) % 1 - 0.5);
-    for (let j = 0; j < P; j++) {
-      const w = Math.sin((j / (P - 1)) * Math.PI) ** 1.4;
-      const disp = 0.05 * (f - 0.5) * w;
-      const r = prof[j][0] + nrm2[j][0] * disp;
-      const z = prof[j][1] + nrm2[j][1] * disp;
-      pos.push(Math.cos(th) * r, Math.sin(th) * r, z);
-      uv.push(s / S, j / (P - 1));
-    }
+
+/* Octágono extruido — base geométrica del Nautilus */
+function octagonShape(outerR: number, innerR = 0, roundR = 0.06) {
+  const s = new THREE.Shape();
+  const n = 8;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * TAU - Math.PI / 8;
+    const x = Math.cos(a) * outerR;
+    const y = Math.sin(a) * outerR;
+    if (i === 0) s.moveTo(x, y); else s.lineTo(x, y);
   }
-  for (let s = 0; s < S; s++) {
-    for (let j = 0; j < P - 1; j++) {
-      const a = s * P + j, b = (s + 1) * P + j;
-      idx.push(a, b, a + 1, b, b + 1, a + 1);
+  s.closePath();
+  if (innerR > 0) {
+    const h = new THREE.Path();
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * TAU - Math.PI / 8;
+      if (i === 0) h.moveTo(Math.cos(a) * innerR, Math.sin(a) * innerR);
+      else h.lineTo(Math.cos(a) * innerR, Math.sin(a) * innerR);
     }
+    h.closePath();
+    s.holes.push(h);
+  }
+  void roundR;
+  return s;
+}
+
+/* Bisel octogonal facetado — característica icónica del Nautilus */
+function nautilusBezel(outerR: number, innerR: number, depth: number) {
+  const n = 8;
+  const verts: number[] = [];
+  const indices: number[] = [];
+  const uvs: number[] = [];
+
+  /* Por cada lado del octágono generamos una cara facetada inclinada */
+  for (let i = 0; i < n; i++) {
+    const a0 = (i / n) * TAU - Math.PI / 8;
+    const a1 = ((i + 1) / n) * TAU - Math.PI / 8;
+    // puntos exterior abajo, exterior arriba, interior arriba
+    const ox0 = Math.cos(a0) * outerR, oy0 = Math.sin(a0) * outerR;
+    const ox1 = Math.cos(a1) * outerR, oy1 = Math.sin(a1) * outerR;
+    const ix0 = Math.cos(a0) * innerR, iy0 = Math.sin(a0) * innerR;
+    const ix1 = Math.cos(a1) * innerR, iy1 = Math.sin(a1) * innerR;
+    const base = i * 4;
+    verts.push(
+      ox0, oy0, 0,        // 0 outer bottom
+      ox1, oy1, 0,        // 1 outer bottom
+      ix1, iy1, depth,   // 2 inner top
+      ix0, iy0, depth,   // 3 inner top
+    );
+    uvs.push(0, 0, 1, 0, 1, 1, 0, 1);
+    indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
+  }
+  /* cara interior plana */
+  for (let i = 0; i < n; i++) {
+    const a0 = (i / n) * TAU - Math.PI / 8;
+    const a1 = ((i + 1) / n) * TAU - Math.PI / 8;
+    const base = n * 4 + i * 3;
+    const cx = 0, cy = 0;
+    verts.push(
+      Math.cos(a0) * innerR, Math.sin(a0) * innerR, depth,
+      Math.cos(a1) * innerR, Math.sin(a1) * innerR, depth,
+      cx, cy, depth,
+    );
+    uvs.push(0, 0, 1, 0, 0.5, 0.5);
+    indices.push(base, base + 1, base + 2);
   }
   const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-  g.setIndex(idx);
+  g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  g.setIndex(indices);
   g.computeVertexNormals();
   return g;
 }
+
+/* Perfil exterior de la caja octogonal Nautilus */
+function nautilusCaseOuter(outerR: number, height: number) {
+  const n = 8;
+  const verts: number[] = [];
+  const indices: number[] = [];
+  const uvs: number[] = [];
+  const h2 = height / 2;
+  for (let i = 0; i < n; i++) {
+    const a0 = (i / n) * TAU - Math.PI / 8;
+    const a1 = ((i + 1) / n) * TAU - Math.PI / 8;
+    const x0 = Math.cos(a0) * outerR, y0 = Math.sin(a0) * outerR;
+    const x1 = Math.cos(a1) * outerR, y1 = Math.sin(a1) * outerR;
+    const base = i * 4;
+    verts.push(x0, y0, -h2, x1, y1, -h2, x1, y1, h2, x0, y0, h2);
+    uvs.push(0, 0, 1, 0, 1, 1, 0, 1);
+    indices.push(base, base + 2, base + 1, base, base + 3, base + 2);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  g.setIndex(indices);
+  g.computeVertexNormals();
+  return g;
+}
+
 function gearGeo(n: number, r: number, depth: number, o: { root?: number; hole?: number; spokes?: number } = {}) {
   const s = new THREE.Shape();
   const ri = r * (o.root ?? 0.87);
@@ -131,6 +190,7 @@ function gearGeo(n: number, r: number, depth: number, o: { root?: number; hole?:
   g.translate(0, 0, -depth / 2);
   return g;
 }
+
 function capsule(a: [number, number], b: [number, number], r: number, depth: number) {
   const s = new THREE.Shape();
   const ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
@@ -141,6 +201,7 @@ function capsule(a: [number, number], b: [number, number], r: number, depth: num
   g.translate(0, 0, -depth / 2);
   return g;
 }
+
 function spiral(rin: number, rout: number, turns: number, tube: number, segs = 320) {
   const pts: THREE.Vector3[] = [];
   for (let i = 0; i <= segs; i++) {
@@ -149,36 +210,31 @@ function spiral(rin: number, rout: number, turns: number, tube: number, segs = 3
   }
   return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), segs * 2, tube, 5, false);
 }
-/* Aguja facetada tipo dauphine */
-function dauphine(L: number, w: number, tail: number, h: number, base = 0.012) {
-  const y1 = L * 0.16;
-  const outline = new THREE.Shape();
-  outline.moveTo(0, -tail); outline.lineTo(w, y1); outline.lineTo(0, L); outline.lineTo(-w, y1); outline.closePath();
-  const plate = new THREE.ExtrudeGeometry(outline, { depth: base, bevelEnabled: false }).toNonIndexed();
-  const T = [0, -tail, base + h * 0.6], Tip = [0, L, base + h * 0.25];
-  const Lf = [-w, y1, base], Rf = [w, y1, base];
-  const Tb = [0, -tail, base], Tipb = [0, L, base];
-  const tri = [
-    ...T, ...Tip, ...Lf,
-    ...T, ...Rf, ...Tip,
-    ...Tb, ...T, ...Lf,
-    ...Tb, ...Rf, ...T,
-    ...Tipb, ...Lf, ...Tip,
-    ...Tipb, ...Tip, ...Rf,
-  ];
-  const top = new THREE.BufferGeometry();
-  top.setAttribute('position', new THREE.Float32BufferAttribute(tri, 3));
-  top.setAttribute('uv', new THREE.Float32BufferAttribute(new Array((tri.length / 3) * 2).fill(0), 2));
-  top.computeVertexNormals();
-  plate.deleteAttribute('normal');
-  plate.computeVertexNormals();
-  return [plate, top];
+
+/* Aguja tipo feuille (Nautilus) — más fina y elegante que dauphine */
+function feuilleHand(L: number, w: number, tail: number, thickness: number) {
+  const shape = new THREE.Shape();
+  const peak = L * 0.5;
+  shape.moveTo(0, -tail);
+  shape.bezierCurveTo(w * 0.7, peak * 0.3, w, peak * 0.7, 0, L);
+  shape.bezierCurveTo(-w, peak * 0.7, -w * 0.7, peak * 0.3, 0, -tail);
+  shape.closePath();
+  const g = new THREE.ExtrudeGeometry(shape, {
+    depth: thickness,
+    bevelEnabled: true,
+    bevelThickness: thickness * 0.4,
+    bevelSize: w * 0.25,
+    bevelSegments: 4,
+    curveSegments: 32,
+  });
+  g.translate(0, 0, -thickness / 2);
+  return g;
 }
 
 /* ---------- construcción ---------- */
 export class Watch {
-  root = new THREE.Group();   // rotación general
-  inner = new THREE.Group();  // centrado del despiece
+  root = new THREE.Group();
+  inner = new THREE.Group();
   layers: Record<LayerKey, Layer> = {} as Record<LayerKey, Layer>;
   hands = { h: new THREE.Group(), m: new THREE.Group(), s: new THREE.Group() };
   spinners: { o: THREE.Object3D; w: number }[] = [];
@@ -226,7 +282,6 @@ export class Watch {
     const PB: [number, number] = [-0.95, -0.2], PC: [number, number] = [0, 0], PT: [number, number] = [0.42, 0.62];
     const PF: [number, number] = [0.98, 0.7], PE: [number, number] = [1.18, 0.26], PBAL: [number, number] = [0.3, -0.86];
 
-    /* orden: z montado, z en despiece, orden de salida */
     this.layer('crystal', 0.56, 4.9, 0);
     this.layer('hands', 0, 3.7, 0.12);
     this.layer('dial', 0, 2.45, 0.24);
@@ -239,115 +294,213 @@ export class Watch {
     this.layer('rotor', -0.42, -4.95, 0.88);
     this.layer('caseback', -0.6, -5.95, 1);
 
-    /* --- caja --- */
-    const caseMat = polished(0xd6d8db, 0.16);
-    this.add('case', lathe([[1.78, -0.6], [1.95, -0.57], [2.03, -0.46], [2.055, -0.2], [2.05, 0.12], [2.02, 0.28], [1.99, 0.31]]), caseMat);
-    const bez = polished(0xe2e4e6, 0.06);
-    bez.side = THREE.DoubleSide;
-    this.add('case', lathe([[1.99, 0.3], [2.0, 0.4], [1.96, 0.5], [1.88, 0.57], [1.78, 0.6], [1.7, 0.585], [1.67, 0.52], [1.665, 0.42]], 200), bez);
-    const lugMat = brushed(0xcfd2d5, 0.26, Math.PI / 2);
-    for (const sy of [1, -1]) {
-      for (const sx of [1, -1]) {
-        const lug = this.add('case', new RoundedBoxGeometry(0.36, 0.95, 0.5, 4, 0.12), lugMat, [sx * 0.86, sy * 2.16, -0.13]);
-        lug.rotation.x = -sy * 0.2;
-      }
-    }
-    /* corona */
-    const crownG = gearGeo(40, 0.28, 0.34, { root: 0.9, hole: 0, spokes: 0 });
-    crownG.rotateY(Math.PI / 2);
-    this.add('case', crownG, polished(0xe0e2e4, 0.1), [2.3, 0, -0.08]);
-    this.add('case', zcyl(0.275, 0.02, 48).rotateY(Math.PI / 2), polished(0xeceef0, 0.05), [2.475, 0, -0.08]);
-    const tube = new THREE.CylinderGeometry(0.15, 0.15, 0.2, 32);
-    tube.rotateZ(Math.PI / 2);
-    this.add('case', tube, polished(), [2.08, 0, -0.08]);
+    /* ===================== CAJA NAUTILUS ===================== */
+    /* Material base: acero pulido lateral, cepillado horizontal en flancos */
+    const casePol = polished(0xc8cacd, 0.12);   // pulido lateral
+    const caseBru = brushed(0xb0b3b7, 0.32, 0); // cepillado flancos
 
-    /* --- brazalete de tres eslabones --- */
-    const polC = polished(0xcfd2d6, 0.08);
-    const brO = brushed(0x9da2a8, 0.36, Math.PI / 2);
-    const R = 2.4, Lk = 0.52, N = 9;
+    /* Perfil exterior octogonal */
+    const caseOuterR = 1.96;
+    const caseH = 1.22;
+    this.add('case', nautilusCaseOuter(caseOuterR, caseH), casePol);
+
+    /* Tapa frontal (bisel octogonal inclinado — icónico Nautilus) */
+    const bezelOut = 2.06, bezelIn = 1.82, bezelDepth = 0.62;
+    const bezelMat = polished(0xd2d5d8, 0.08);
+    this.add('case', nautilusBezel(bezelOut, bezelIn, bezelDepth), bezelMat, [0, 0, caseH * 0.5 - 0.06]);
+
+    /* Aristas horizontales del bisel — las líneas características del Nautilus */
+    const edgeMat = brushed(0xe0e2e5, 0.14, Math.PI / 2);
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * TAU - Math.PI / 8;
+      const am = ((i + 0.5) / 8) * TAU - Math.PI / 8;
+      const mx = Math.cos(am) * (bezelOut + bezelIn) * 0.5;
+      const my = Math.sin(am) * (bezelOut + bezelIn) * 0.5;
+      const edgeBar = new THREE.BoxGeometry(0.52, 0.055, bezelDepth * 0.9);
+      edgeBar.rotateZ(a + Math.PI / 8 + Math.PI / 2);
+      this.add('case', edgeBar, edgeMat, [mx, my, caseH * 0.5 + bezelDepth * 0.45 - 0.06]);
+    }
+
+    /* Fondo de la caja */
+    const caseBottom = new THREE.ExtrudeGeometry(octagonShape(caseOuterR * 0.98), {
+      depth: 0.06, bevelEnabled: false, curveSegments: 2,
+    });
+    caseBottom.rotateZ(Math.PI / 8);
+    this.add('case', caseBottom, caseBru, [0, 0, -caseH * 0.5]);
+
+    /* Tapa delantera (anillo exterior bisel) */
+    const rimGeo = new THREE.ExtrudeGeometry(octagonShape(bezelOut + 0.08, bezelOut - 0.01), {
+      depth: bezelDepth + 0.06, bevelEnabled: false, curveSegments: 2,
+    });
+    rimGeo.rotateZ(Math.PI / 8);
+    this.add('case', rimGeo, casePol, [0, 0, caseH * 0.5 - 0.08]);
+
+    /* Orejas / integraciones del brazalete — arriba y abajo */
+    const earMat = brushed(0xb8bbbe, 0.3, Math.PI / 2);
     for (const sy of [1, -1]) {
-      this.add('bracelet', new RoundedBoxGeometry(1.34, 0.42, 0.34, 3, 0.1), brO, [0, sy * 2.46, -0.25]).rotation.x = -sy * 0.12;
+      /* eslabón de conexión */
+      const earGeo = new THREE.BoxGeometry(1.82, 0.48, caseH);
+      this.add('case', earGeo, earMat, [0, sy * (caseOuterR + 0.22), 0]);
+      /* biselado lateral de la oreja */
+      const earBevel = new THREE.BoxGeometry(1.72, 0.1, caseH * 0.85);
+      this.add('case', earBevel, casePol, [0, sy * (caseOuterR + 0.46), 0]);
+    }
+
+    /* Corona — Nautilus tiene la corona integrada a las 3h, pequeña */
+    const crownMat = polished(0xe0e2e4, 0.1);
+    const crownG = new THREE.CylinderGeometry(0.2, 0.2, 0.28, 32);
+    crownG.rotateZ(Math.PI / 2);
+    this.add('case', crownG, crownMat, [caseOuterR + 0.14, 0, -0.05]);
+    /* Estrías de agarre */
+    for (let k = 0; k < 18; k++) {
+      const a = (k / 18) * TAU;
+      const ridgeG = new THREE.BoxGeometry(0.28, 0.022, 0.018);
+      ridgeG.rotateY(a);
+      const ridge = new THREE.Mesh(ridgeG, polished(0xdddfe1, 0.08));
+      ridge.position.set(caseOuterR + 0.14, 0, -0.05);
+      this.layers.case.group.add(ridge);
+    }
+
+    /* ===================== BRAZALETE NAUTILUS INTEGRADO ===================== */
+    /* Característica definitoria: eslabones horizontales integrados con la caja */
+    const polLink = polished(0xcdd0d3, 0.09);
+    const bruLink = brushed(0xa8abad, 0.34, 0);
+    const linkW = 1.82;  // ancho total del brazalete
+    const linkH = 0.46;  // alto de cada eslabón
+    const N = 10;        // eslabones por lado
+
+    for (const sy of [1, -1]) {
       for (let k = 0; k < N; k++) {
-        const phi = ((k + 0.5) * Lk) / R;
-        const y = sy * (2.68 + R * Math.sin(phi));
-        const z = -0.28 - R * (1 - Math.cos(phi));
-        const taper = 1 - k * 0.018;
-        const grp = new THREE.Group();
-        grp.position.set(0, y, z);
-        grp.rotation.x = -sy * phi;
-        this.layers.bracelet.group.add(grp);
-        this.add('bracelet', new RoundedBoxGeometry(0.4 * taper, Lk * 0.9, 0.26, 3, 0.07), polC, [0, 0, 0.02], grp);
+        const startY = sy * (caseOuterR + 0.48);
+        const y = startY + sy * (k + 0.5) * linkH;
+        const taper = Math.max(0.68, 1 - k * 0.032);
+        const lw = linkW * taper;
+        const lz = -0.04 - k * 0.038; // se curva ligeramente
+
+        /* eslabón central (pulido) */
+        const cLink = new THREE.BoxGeometry(lw * 0.38, linkH * 0.88, 0.34);
+        this.add('bracelet', cLink, polLink, [0, y, lz]);
+
+        /* eslabones laterales (cepillados) — 2 por lado */
         for (const sx of [1, -1]) {
-          this.add('bracelet', new RoundedBoxGeometry(0.44 * taper, Lk * 0.96, 0.3, 3, 0.09), brO, [sx * 0.43 * taper, 0, 0], grp);
+          const sLink = new THREE.BoxGeometry(lw * 0.28, linkH * 0.94, 0.32);
+          this.add('bracelet', sLink, bruLink, [sx * lw * 0.33, y, lz - 0.01]);
+        }
+
+        /* línea de separación entre eslabones */
+        if (k < N - 1) {
+          const divider = new THREE.BoxGeometry(lw * taper * 0.98, 0.022, 0.36);
+          this.add('bracelet', divider, polished(0x888b8e, 0.18), [0, y + sy * linkH * 0.5, lz]);
         }
       }
+      /* cierre del brazalete al final */
+      const closeY = sy * (caseOuterR + 0.48 + (N + 0.5) * linkH);
+      const closureGeo = new THREE.BoxGeometry(linkW * 0.68 * (1 - N * 0.032), linkH * 0.7, 0.28);
+      this.add('bracelet', closureGeo, polished(0xd8dadc, 0.1), [0, closeY, -0.04 - N * 0.038]);
     }
 
-    /* --- esfera --- */
+    /* ===================== ESFERA AZUL NAUTILUS ===================== */
+    /* Esfera azul característica con rayas horizontales en relieve */
     const dialMat = new THREE.MeshPhysicalMaterial({
-      map: dialBase(), color: 0xffffff, metalness: 0.45, roughness: 0.42,
-      anisotropy: 0.55, anisotropyMap: sunburstAniso(), envMapIntensity: 0.55,
+      map: nautilusDialBase(),
+      color: 0xffffff,
+      metalness: 0.15,
+      roughness: 0.38,
+      envMapIntensity: 0.5,
     });
-    this.add('dial', new THREE.CircleGeometry(1.66, 160), dialMat, [0, 0, 0.14]);
+    /* Esfera principal */
+    const dialR = 1.74;
+    this.add('dial', new THREE.CircleGeometry(dialR, 160), dialMat, [0, 0, 0.14]);
+
+    /* Rayas horizontales en relieve — efecto característico Nautilus */
+    const stripeMat = brushed(0x2a4a7a, 0.22, Math.PI / 2);
+    const stripeCount = 12;
+    for (let i = 0; i < stripeCount; i++) {
+      const yPos = -dialR * 0.85 + (i + 0.5) * (dialR * 1.7 / stripeCount);
+      const halfH = (dialR * 1.7 / stripeCount) * 0.36;
+      const xExtent = Math.sqrt(Math.max(0, dialR * dialR - yPos * yPos)) * 0.96;
+      if (xExtent < 0.05) continue;
+      const stripeGeo = new THREE.PlaneGeometry(xExtent * 2, halfH * 2);
+      this.add('dial', stripeGeo, stripeMat, [0, yPos, 0.148]);
+    }
+
+    /* Print sobre la esfera */
     this.printTex = drawDialPrint(null);
     const printMat = new THREE.MeshStandardMaterial({ map: this.printTex, transparent: true, roughness: 0.55, metalness: 0, depthWrite: false });
-    this.add('dial', new THREE.CircleGeometry(1.66, 160), printMat, [0, 0, 0.1425]);
+    this.add('dial', new THREE.CircleGeometry(dialR, 160), printMat, [0, 0, 0.1425]);
+
+    /* Rehaut grabado */
     this.rehautTex = drawRehaut(null);
     const rehMat = new THREE.MeshStandardMaterial({ map: this.rehautTex, metalness: 0.4, roughness: 0.45, side: THREE.DoubleSide });
-    this.add('dial', lathe([[1.66, 0.14], [1.75, 0.34]], 240), rehMat);
-    /* índices aplicados */
+    this.add('dial', lathe([[dialR, 0.14], [dialR + 0.09, 0.34]], 240), rehMat);
+
+    /* Índices báton (tipo Nautilus — rectangulares, aplicados) */
     const idxMat = polished(0xf0f1f3, 0.05);
     const lumeMat = new THREE.MeshStandardMaterial({ color: 0xe9e8e1, roughness: 0.7, metalness: 0 });
-    const idxGeo = new RoundedBoxGeometry(0.105, 0.34, 0.07, 2, 0.02);
-    const lumeGeo = new THREE.PlaneGeometry(0.04, 0.24);
     for (let h = 0; h < 12; h++) {
+      if (h === 3 || h === 6 || h === 9) continue; // Nautilus: sin índice en 3, 6, 9
       const a = (h / 12) * TAU;
-      const offsets = h === 0 ? [-0.075, 0.075] : [0];
-      for (const off of offsets) {
-        const r = 1.25;
-        const cx = Math.sin(a) * r + Math.cos(a) * off, cy = Math.cos(a) * r - Math.sin(a) * off;
-        const bar = this.add('dial', idxGeo, idxMat, [cx, cy, 0.18]);
+      const r = 1.28;
+      const cx = Math.sin(a) * r;
+      const cy = Math.cos(a) * r;
+      /* índice doble en 12 */
+      if (h === 0) {
+        for (const off of [-0.085, 0.085]) {
+          const bar = this.add('dial', new THREE.BoxGeometry(0.09, 0.32, 0.065), idxMat, [cx + Math.cos(a) * off, cy - Math.sin(a) * off, 0.18]);
+          bar.rotation.z = -a;
+          const lume = this.add('dial', new THREE.PlaneGeometry(0.04, 0.22), lumeMat, [cx + Math.cos(a) * off, cy - Math.sin(a) * off, 0.215]);
+          lume.rotation.z = -a;
+        }
+      } else {
+        const bar = this.add('dial', new THREE.BoxGeometry(0.09, 0.32, 0.065), idxMat, [cx, cy, 0.18]);
         bar.rotation.z = -a;
-        const lume = this.add('dial', lumeGeo, lumeMat, [cx, cy, 0.2155]);
+        const lume = this.add('dial', new THREE.PlaneGeometry(0.04, 0.22), lumeMat, [cx, cy, 0.215]);
         lume.rotation.z = -a;
       }
     }
 
-    /* --- agujas --- */
-    const hMat = polished(0xf2f3f5, 0.05);
-    hMat.flatShading = true;
+    /* ===================== AGUJAS FEUILLE (NAUTILUS) ===================== */
+    const hMat = polished(0xf2f3f5, 0.04);
+    hMat.flatShading = false;
     const { h, m, s } = this.hands;
     h.position.z = 0.235; m.position.z = 0.265; s.position.z = 0.295;
     this.layers.hands.group.add(h, m, s);
-    for (const g of dauphine(0.86, 0.105, 0.16, 0.04)) this.add('hands', g, hMat, [0, 0, 0], h);
-    for (const g of dauphine(1.42, 0.078, 0.18, 0.034)) this.add('hands', g, hMat, [0, 0, 0], m);
-    const sMat = polished(0xe8eaec, 0.08);
-    const sBar = new THREE.BoxGeometry(0.022, 1.82, 0.012);
-    sBar.translate(0, 1.82 / 2 - 0.36, 0);
-    this.add('hands', sBar, sMat, [0, 0, 0], s);
-    this.add('hands', zcyl(0.055, 0.014, 32), sMat, [0, -0.26, 0], s);
-    this.add('hands', zcyl(0.045, 0.014, 32), sMat, [0, 1.12, 0], s);
-    this.add('hands', zcyl(0.028, 0.02, 32), lumeMat, [0, 1.12, 0.012], s);
-    this.add('hands', zcyl(0.07, 0.16, 32), polished(0xeeeff1, 0.05), [0, 0, 0.26]);
 
-    /* --- cristal de zafiro --- */
-    const Rc = 14, th = Math.asin(1.74 / Rc);
+    /* Agujas feuille — forma de hoja característica Nautilus */
+    this.add('hands', feuilleHand(0.88, 0.11, 0.15, 0.038), hMat, [0, 0, 0], h);
+    this.add('hands', feuilleHand(1.44, 0.085, 0.17, 0.032), hMat, [0, 0, 0], m);
+
+    /* Segundero fino, con contra-peso circular */
+    const sMat = polished(0xe8eaec, 0.08);
+    const sBar = new THREE.BoxGeometry(0.018, 1.86, 0.01);
+    sBar.translate(0, 1.86 / 2 - 0.32, 0);
+    this.add('hands', sBar, sMat, [0, 0, 0], s);
+    this.add('hands', zcyl(0.06, 0.012, 32), sMat, [0, -0.22, 0], s);
+    this.add('hands', zcyl(0.04, 0.012, 32), sMat, [0, 1.14, 0], s);
+    this.add('hands', zcyl(0.025, 0.018, 32), lumeMat, [0, 1.14, 0.01], s);
+    /* pivote central */
+    this.add('hands', zcyl(0.065, 0.15, 32), polished(0xeeeff1, 0.05), [0, 0, 0.24]);
+
+    /* ===================== CRISTAL ZAFIRO (PLANO — Nautilus) ===================== */
+    /* El Nautilus tiene cristal zafiro curvo pero casi plano */
+    const Rc = 22, th = Math.asin(dialR * 1.02 / Rc);
     const cg = new THREE.SphereGeometry(Rc, 96, 8, 0, TAU, 0, th);
     cg.rotateX(Math.PI / 2);
     cg.translate(0, 0, -Rc * Math.cos(th));
     const glass = new THREE.MeshPhysicalMaterial({
-      color: 0xffffff, metalness: 0, roughness: 0.02, transparent: true, opacity: 0.1,
+      color: 0xffffff, metalness: 0, roughness: 0.01, transparent: true, opacity: 0.08,
       clearcoat: 1, clearcoatRoughness: 0, envMapIntensity: 1.6, depthWrite: false,
     });
     this.add('crystal', cg, glass);
 
-    /* --- platina --- */
+    /* ===================== MOVIMIENTO INTERNO ===================== */
+    /* Platina */
     const plateMat = new THREE.MeshStandardMaterial({ map: perlage(), metalness: 1, roughness: 0.36, color: 0xffffff });
     this.add('plate', zcyl(1.7, 0.08, 96), new THREE.MeshStandardMaterial({ color: 0x9a9ea2, metalness: 1, roughness: 0.3 }));
     this.add('plate', new THREE.CircleGeometry(1.7, 96), plateMat, [0, 0, -0.0405]).rotation.y = Math.PI;
     this.add('plate', new THREE.CircleGeometry(1.7, 96), plateMat, [0, 0, 0.0405]);
 
-    /* --- tren de ruedas --- */
+    /* Tren de ruedas */
     const gm = gilt();
     const steel = polished(0xd8dadc, 0.12);
     const wheels: [[number, number], number, number, number, number][] = [
@@ -360,7 +513,7 @@ export class Watch {
     });
     this.add('train', spiral(0.1, 0.52, 6, 0.012), polished(0xb8bbbe, 0.2), [PB[0], PB[1], 0.09]);
 
-    /* --- volante y escape --- */
+    /* Volante y escape */
     this.balance.position.set(PBAL[0], PBAL[1], 0);
     this.layers.balance.group.add(this.balance);
     this.add('balance', new THREE.TorusGeometry(0.62, 0.045, 16, 96), gm, [0, 0, 0], this.balance);
@@ -383,7 +536,7 @@ export class Watch {
     this.add('balance', new THREE.ExtrudeGeometry(fs, { depth: 0.04, bevelEnabled: false }), steel, [0, 0, -0.02], this.fork);
     this.add('balance', zcyl(0.03, 0.08, 12), ruby(), [-0.4, 0.03, 0], this.fork);
 
-    /* --- puentes --- */
+    /* Puentes */
     const cot = cotes();
     const bridgeMat = new THREE.MeshStandardMaterial({ map: cot, metalness: 1, roughness: 0.3, color: 0xffffff });
     this.add('bridges', capsule(PB, [-0.25, 0.62], 0.56, 0.08), bridgeMat);
@@ -400,7 +553,7 @@ export class Watch {
       this.add('bridges', new THREE.TorusGeometry(0.075, 0.018, 8, 24), polished(0xd4a24c, 0.2), [x, y, 0.06]);
     });
 
-    /* --- rotor --- */
+    /* Rotor */
     this.layers.rotor.group.add(this.rotor);
     const rs = new THREE.Shape();
     rs.absarc(0, 0, 1.68, 0.08, Math.PI - 0.08, false);
@@ -417,7 +570,7 @@ export class Watch {
     this.rotor.add(eng);
     this.layers.rotor.mats.push({ m: eng.material as unknown as THREE.MeshStandardMaterial, base: new THREE.Color(1, 1, 1), env: 1, op: 1 });
 
-    /* --- fondo con zafiro --- */
+    /* Fondo con zafiro */
     const cb = brushed(0x6c7176, 0.32);
     cb.side = THREE.DoubleSide;
     this.add('caseback', lathe([[1.4, 0.04], [1.62, 0.0], [1.82, -0.06], [1.8, -0.1], [1.4, -0.08]]), cb);
@@ -425,7 +578,6 @@ export class Watch {
     this.add('caseback', zcyl(1.42, 0.04, 96), cbGlass, [0, 0, -0.04]);
   }
 
-  /* hora de Madrid en las agujas, con segundero continuo */
   private tzMin = -1;
   private tzH = 0;
   private tzM = 0;

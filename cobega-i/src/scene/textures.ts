@@ -45,27 +45,44 @@ export function sunburstAniso(size = 512) {
   return t;
 }
 
-/* Color base de la esfera: negro con rayos muy finos */
-export function dialBase(size = 1024) {
+/* Esfera azul Nautilus 5711 — rayas horizontales en degradado */
+export function nautilusDialBase(size = 1024) {
   const { c, g } = makeCanvas(size, size);
   const cx = size / 2;
-  g.fillStyle = '#121315';
+
+  /* Base azul profundo característico del 5711 */
+  g.fillStyle = '#1a3a5c';
   g.fillRect(0, 0, size, size);
-  for (let i = 0; i < 1440; i++) {
-    const a = (i / 1440) * Math.PI * 2;
-    g.strokeStyle = i % 2 ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.18)';
-    g.lineWidth = 1;
-    g.beginPath();
-    g.moveTo(cx, cx);
-    g.lineTo(cx + Math.cos(a) * cx * 1.1, cx + Math.sin(a) * cx * 1.1);
-    g.stroke();
+
+  /* Rayas horizontales — la firma del Nautilus */
+  const stripeCount = 14;
+  const stripeH = size / stripeCount;
+  for (let i = 0; i < stripeCount; i++) {
+    const y = i * stripeH;
+    const gr = g.createLinearGradient(0, y, 0, y + stripeH);
+    /* alternancia de claridad sutil: las rayas "brillantes" y "oscuras" */
+    if (i % 2 === 0) {
+      gr.addColorStop(0,    '#1e4470');
+      gr.addColorStop(0.3,  '#2a5a8e');
+      gr.addColorStop(0.55, '#274f7d');
+      gr.addColorStop(1,    '#1c3e66');
+    } else {
+      gr.addColorStop(0,    '#1a3860');
+      gr.addColorStop(0.45, '#163255');
+      gr.addColorStop(1,    '#183660');
+    }
+    g.fillStyle = gr;
+    g.fillRect(0, y, size, stripeH);
   }
-  const gr = g.createRadialGradient(cx, cx, 0, cx, cx, cx);
-  gr.addColorStop(0, 'rgba(255,255,255,0.05)');
-  gr.addColorStop(0.7, 'rgba(0,0,0,0)');
-  gr.addColorStop(1, 'rgba(0,0,0,0.35)');
-  g.fillStyle = gr;
+
+  /* Viñeta radial sutil para profundidad */
+  const vign = g.createRadialGradient(cx, cx, cx * 0.3, cx, cx, cx);
+  vign.addColorStop(0,   'rgba(80,140,200,0.12)');
+  vign.addColorStop(0.6, 'rgba(0,0,0,0)');
+  vign.addColorStop(1,   'rgba(0,0,0,0.4)');
+  g.fillStyle = vign;
   g.fillRect(0, 0, size, size);
+
   return srgb(c);
 }
 
@@ -99,15 +116,21 @@ export function drawDialPrint(t: THREE.CanvasTexture | null, size = 2048) {
   }
   g.textAlign = 'center';
   g.textBaseline = 'middle';
-  g.fillStyle = '#ecece8';
-  g.font = `700 ${Math.round(size * 0.05)}px ${DISPLAY}`;
-  spaced(g, size * 0.012);
-  g.fillText('COBEGA I', cx + size * 0.006, cx - size * 0.2);
-  g.fillStyle = 'rgba(236,236,232,0.7)';
-  g.font = `400 ${Math.round(size * 0.017)}px ${MONO}`;
-  spaced(g, size * 0.006);
-  g.fillText('SANT MARTÍ', cx + size * 0.003, cx - size * 0.155);
-  g.fillText('BARCELONA', cx + size * 0.003, cx + size * 0.26);
+  /* Nombre del activo — posición Patek (sobre el centro) */
+  g.fillStyle = 'rgba(240,242,248,0.96)';
+  g.font = `700 ${Math.round(size * 0.048)}px ${DISPLAY}`;
+  spaced(g, size * 0.014);
+  g.fillText('COBEGA I', cx, cx - size * 0.19);
+  /* Subtítulo fino */
+  g.fillStyle = 'rgba(200,215,235,0.75)';
+  g.font = `400 ${Math.round(size * 0.016)}px ${MONO}`;
+  spaced(g, size * 0.007);
+  g.fillText('SANT MARTÍ · BARCELONA', cx, cx - size * 0.145);
+  /* AUTOMATIC en 6h — como en el Nautilus real */
+  g.fillStyle = 'rgba(180,200,225,0.65)';
+  g.font = `400 ${Math.round(size * 0.014)}px ${MONO}`;
+  spaced(g, size * 0.008);
+  g.fillText('AUTOMATIC', cx, cx + size * 0.24);
   if (!t) {
     t = srgb(c, 16);
   } else {
