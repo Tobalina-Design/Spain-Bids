@@ -45,94 +45,121 @@ export function sunburstAniso(size = 512) {
   return t;
 }
 
-/* Esfera azul Nautilus 5711 — rayas horizontales en degradado */
-export function nautilusDialBase(size = 1024) {
+/* Nautilus: la esfera cubre el cuadrado [-DIAL_S, DIAL_S] en unidades del reloj */
+export const DIAL_S = 1.8;
+const SERIF = '"Cormorant Garamond", "Cormorant", Georgia, "Times New Roman", serif';
+
+/* Color de la esfera: azul degradado con relieve horizontal */
+export function nautilusDial(size = 2048) {
   const { c, g } = makeCanvas(size, size);
   const cx = size / 2;
-
-  /* Base azul profundo característico del 5711 */
-  g.fillStyle = '#1a3a5c';
+  const base = g.createRadialGradient(cx, cx * 0.96, 0, cx, cx, cx * 0.92);
+  base.addColorStop(0, '#3d5f86');
+  base.addColorStop(0.45, '#2a4668');
+  base.addColorStop(0.8, '#15253b');
+  base.addColorStop(1, '#0b1422');
+  g.fillStyle = base;
   g.fillRect(0, 0, size, size);
-
-  /* Rayas horizontales — la firma del Nautilus */
-  const stripeCount = 14;
-  const stripeH = size / stripeCount;
-  for (let i = 0; i < stripeCount; i++) {
-    const y = i * stripeH;
-    const gr = g.createLinearGradient(0, y, 0, y + stripeH);
-    /* alternancia de claridad sutil: las rayas "brillantes" y "oscuras" */
-    if (i % 2 === 0) {
-      gr.addColorStop(0,    '#1e4470');
-      gr.addColorStop(0.3,  '#2a5a8e');
-      gr.addColorStop(0.55, '#274f7d');
-      gr.addColorStop(1,    '#1c3e66');
-    } else {
-      gr.addColorStop(0,    '#1a3860');
-      gr.addColorStop(0.45, '#163255');
-      gr.addColorStop(1,    '#183660');
-    }
-    g.fillStyle = gr;
-    g.fillRect(0, y, size, stripeH);
+  const n = 42;
+  const pitch = size / n;
+  for (let i = 0; i < n; i++) {
+    const y = i * pitch;
+    const band = g.createLinearGradient(0, y, 0, y + pitch);
+    band.addColorStop(0, 'rgba(255,255,255,0.10)');
+    band.addColorStop(0.18, 'rgba(255,255,255,0.03)');
+    band.addColorStop(0.7, 'rgba(0,0,0,0.04)');
+    band.addColorStop(0.86, 'rgba(0,0,0,0.30)');
+    band.addColorStop(1, 'rgba(0,0,0,0.38)');
+    g.fillStyle = band;
+    g.fillRect(0, y, size, pitch);
   }
-
-  /* Viñeta radial sutil para profundidad */
-  const vign = g.createRadialGradient(cx, cx, cx * 0.3, cx, cx, cx);
-  vign.addColorStop(0,   'rgba(80,140,200,0.12)');
-  vign.addColorStop(0.6, 'rgba(0,0,0,0)');
-  vign.addColorStop(1,   'rgba(0,0,0,0.4)');
-  g.fillStyle = vign;
-  g.fillRect(0, 0, size, size);
-
-  return srgb(c);
+  return srgb(c, 16);
 }
 
-/* Impresión de la esfera: minutería y textos, sobre transparente */
+/* Relieve horizontal de la esfera (mapa de normales) */
+export function nautilusDialNormal(h = 1024) {
+  const w = 8;
+  const { c, g } = makeCanvas(w, h);
+  const img = g.createImageData(w, h);
+  const n = 42;
+  const pitch = h / n;
+  for (let y = 0; y < h; y++) {
+    const t = (y % pitch) / pitch;
+    /* banda redondeada con surco en V al final */
+    let dy = 0;
+    if (t < 0.12) dy = -0.9 * (1 - t / 0.12);
+    else if (t > 0.82) dy = 0.9 * ((t - 0.82) / 0.18);
+    else dy = (t - 0.47) * 0.25;
+    const nx = 0, ny = -dy, nz = 1;
+    const l = Math.hypot(nx, ny, nz);
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      img.data[i] = (nx / l * 0.5 + 0.5) * 255;
+      img.data[i + 1] = (ny / l * 0.5 + 0.5) * 255;
+      img.data[i + 2] = (nz / l * 0.5 + 0.5) * 255;
+      img.data[i + 3] = 255;
+    }
+  }
+  g.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.NoColorSpace;
+  t.anisotropy = 8;
+  return t;
+}
+
+/* Impresión de la esfera: minutería y firma, sobre transparente */
 export function drawDialPrint(t: THREE.CanvasTexture | null, size = 2048) {
   const { c, g } = makeCanvas(size, size);
   const cx = size / 2;
-  const R = cx * 0.985;
+  const k = size / (DIAL_S * 2);
   g.clearRect(0, 0, size, size);
-  g.strokeStyle = 'rgba(235,235,232,0.9)';
+  g.strokeStyle = 'rgba(238,240,244,0.88)';
   for (let m = 0; m < 60; m++) {
     const a = (m / 60) * Math.PI * 2 - Math.PI / 2;
     const five = m % 5 === 0;
-    const r1 = R * (five ? 0.925 : 0.945);
-    const r2 = R * 0.975;
-    g.lineWidth = five ? 5 : 2.4;
+    const r1 = (five ? 1.37 : 1.405) * k;
+    const r2 = 1.45 * k;
+    g.lineWidth = five ? 4 : 2.2;
     g.beginPath();
     g.moveTo(cx + Math.cos(a) * r1, cx + Math.sin(a) * r1);
     g.lineTo(cx + Math.cos(a) * r2, cx + Math.sin(a) * r2);
     g.stroke();
   }
-  for (let q = 0; q < 240; q++) {
-    if (q % 4 === 0) continue;
-    const a = (q / 240) * Math.PI * 2 - Math.PI / 2;
-    g.lineWidth = 1;
-    g.strokeStyle = 'rgba(235,235,232,0.35)';
-    g.beginPath();
-    g.moveTo(cx + Math.cos(a) * R * 0.962, cx + Math.sin(a) * R * 0.962);
-    g.lineTo(cx + Math.cos(a) * R * 0.975, cx + Math.sin(a) * R * 0.975);
-    g.stroke();
-  }
   g.textAlign = 'center';
   g.textBaseline = 'middle';
-  /* Nombre del activo — posición Patek (sobre el centro) */
-  g.fillStyle = 'rgba(240,242,248,0.96)';
-  g.font = `700 ${Math.round(size * 0.048)}px ${DISPLAY}`;
-  spaced(g, size * 0.014);
-  g.fillText('COBEGA I', cx, cx - size * 0.19);
-  /* Subtítulo fino */
-  g.fillStyle = 'rgba(200,215,235,0.75)';
-  g.font = `400 ${Math.round(size * 0.016)}px ${MONO}`;
-  spaced(g, size * 0.007);
-  g.fillText('SANT MARTÍ · BARCELONA', cx, cx - size * 0.145);
-  /* AUTOMATIC en 6h — como en el Nautilus real */
-  g.fillStyle = 'rgba(180,200,225,0.65)';
-  g.font = `400 ${Math.round(size * 0.014)}px ${MONO}`;
-  spaced(g, size * 0.008);
-  g.fillText('AUTOMATIC', cx, cx + size * 0.24);
+  g.fillStyle = 'rgba(244,245,248,0.97)';
+  g.font = `600 ${Math.round(0.17 * k)}px ${SERIF}`;
+  spaced(g, 0.035 * k);
+  g.fillText('SAVILLS', cx + 0.0175 * k, cx - 0.62 * k);
+  g.fillStyle = 'rgba(236,238,242,0.85)';
+  g.font = `500 ${Math.round(0.066 * k)}px ${SERIF}`;
+  spaced(g, 0.03 * k);
+  g.fillText('BARCELONA', cx + 0.015 * k, cx - 0.47 * k);
   if (!t) {
     t = srgb(c, 16);
+  } else {
+    t.image = c;
+    t.needsUpdate = true;
+  }
+  return t;
+}
+
+/* Disco de fecha (ventana a las 3) */
+export function drawDate(t: THREE.CanvasTexture | null) {
+  const { c, g } = makeCanvas(160, 128);
+  g.fillStyle = '#f3f1ec';
+  g.fillRect(0, 0, 160, 128);
+  let d = new Date().getDate();
+  try {
+    d = +new Intl.DateTimeFormat('es-ES', { timeZone: 'Europe/Madrid', day: 'numeric' }).format(new Date());
+  } catch { /* fecha local */ }
+  g.fillStyle = '#16181c';
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.font = `500 92px ${SERIF}`;
+  g.fillText(String(d), 80, 68);
+  if (!t) {
+    t = srgb(c, 8);
   } else {
     t.image = c;
     t.needsUpdate = true;

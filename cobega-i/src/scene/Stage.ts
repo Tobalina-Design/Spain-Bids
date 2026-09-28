@@ -94,7 +94,15 @@ export class Stage {
     this.resize();
     window.addEventListener('resize', this.resize);
     window.addEventListener('pointermove', this.onPointer, { passive: true });
-    if (document.fonts?.ready) document.fonts.ready.then(() => this.watch.refreshTextures());
+    /* la firma de la esfera usa una serif web: se redibuja cuando llega */
+    const refresh = () => this.watch.refreshTextures();
+    const loadFonts = () => {
+      if (!document.fonts?.load) return;
+      Promise.all(['600 80px "Cormorant Garamond"', '500 80px "Cormorant Garamond"'].map((f) => document.fonts.load(f)))
+        .then(refresh).catch(() => {});
+    };
+    document.fonts?.ready.then(refresh);
+    [0, 1200, 3500].forEach((ms) => setTimeout(loadFonts, ms));
   }
 
   private onPointer = (e: PointerEvent) => {
@@ -121,8 +129,9 @@ export class Stage {
     if (this.simplified) return;
     this.simplified = true;
     this.watch.root.traverse((o) => {
-      const m = (o as THREE.Mesh).material as THREE.MeshPhysicalMaterial | undefined;
-      if (m && (m as THREE.MeshPhysicalMaterial).isMeshPhysicalMaterial) {
+      const mm = (o as THREE.Mesh).material as THREE.MeshPhysicalMaterial | THREE.MeshPhysicalMaterial[] | undefined;
+      for (const m of mm ? (Array.isArray(mm) ? mm : [mm]) : []) {
+        if (!m.isMeshPhysicalMaterial) continue;
         m.anisotropy = 0;
         m.anisotropyMap = null;
         m.clearcoat = 0;
