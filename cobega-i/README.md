@@ -11,7 +11,8 @@ pnpm dev
 
 ## Publicación
 
-Se publica automáticamente con el flujo de la raíz del repositorio en `/cobega-i/`.
+Cada push a `main` compila y publica en GitHub Pages mediante `.github/workflows/deploy.yml`.
+En *Settings → Pages*, la fuente debe ser **GitHub Actions**.
 
 ## Dónde editar
 

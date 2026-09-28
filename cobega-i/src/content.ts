@@ -1,8 +1,8 @@
 export const SECTIONS = [
   { id: 'inicio', label: 'Inicio' },
-  { id: 'activo', label: 'El activo' },
+  { id: 'activo', label: 'El contexto' },
   { id: 'propuesta', label: 'La propuesta' },
-  { id: 'escenarios', label: 'Escenarios' },
+  { id: 'escenarios', label: 'El modelo' },
   { id: 'ficha', label: 'Ficha' },
   { id: 'cierre', label: 'Cierre' },
 ] as const;
@@ -12,92 +12,92 @@ export type SectionId = (typeof SECTIONS)[number]['id'];
 export const HERO = {
   eyebrow: 'Propuesta para PATRIZIA · Sant Martí, Barcelona',
   title: 'COBEGA I',
-  lead: 'Un edificio que pasa del alquiler a la venta sin que PATRIZIA pierda el control de ninguna decisión.',
+  lead: 'Una oportunidad para maximizar el valor de la desinversión en un mercado donde la demanda supera con creces la oferta.',
 };
 
 export const ACTIVO = {
-  eyebrow: '01 · El activo',
-  title: 'Un propietario hoy. Muchos mañana.',
+  eyebrow: '01 · El contexto',
+  title: 'Barcelona: 90.000 viviendas de déficit.',
   body: [
-    'Cobega I es un edificio residencial en Sant Martí que deja el alquiler para venderse vivienda a vivienda.',
-    'Cada venta suma un propietario a la comunidad y reparte un poco más las decisiones. Nuestra propuesta empieza ahí: que ese reparto no le quite a PATRIZIA el control del activo.',
+    'Barcelona registra un déficit estimado de más de 90.000 viviendas, lo que mantiene una elevada presión sobre los precios y una intensa competencia por la oferta disponible.',
+    'Para aprovechar plenamente este contexto, no basta con poner los activos en el mercado. Es necesario diseñar una estrategia integral que combine comercialización eficiente, gestión operativa alineada y coordinación constante entre todos los equipos implicados.',
   ],
   facts: [
     { k: 'Ubicación', v: 'Sant Martí, Barcelona' },
-    { k: 'Hoy', v: 'Alquiler (BTR)' },
-    { k: 'Estrategia', v: 'Venta por viviendas (BTS)' },
-    { k: 'Marco', v: 'Ley de Vivienda 12/2023' },
+    { k: 'Déficit estimado', v: '+90.000 viviendas' },
+    { k: 'Estrategia', v: 'Desinversión maximizada' },
+    { k: 'Unidades gestionadas', v: '+4.500 Savills' },
   ],
 };
 
 export const PROPUESTA = {
   eyebrow: '02 · La propuesta',
-  title: 'Seis compromisos que funcionan juntos.',
+  title: 'Un único interlocutor. Una única estrategia.',
   steps: [
     {
-      name: 'Transparencia',
-      title: 'PATRIZIA lo ve todo, siempre.',
-      body: 'Una carta de transparencia deja por escrito qué hacemos, qué no hacemos y cuándo se lo contamos. Sin sorpresas en ninguna reunión.',
+      name: 'Información',
+      title: 'Datos fiables en tiempo real.',
+      body: 'Un inversor institucional como PATRIZIA necesita información fiable, transparente y en tiempo real que facilite la toma de decisiones durante todo el proceso. Sin esperas, sin opacidad.',
     },
     {
-      name: 'Rentabilidad',
-      title: 'Cada venta, medida antes de firmarla.',
-      body: 'Un modelo financiero con tres escenarios muestra el efecto de cada vivienda vendida en el NOI y en el VAN del activo.',
+      name: 'Coordinación',
+      title: 'Todos los equipos. Un solo modelo.',
+      body: 'La coordinación entre Property Management, Residential Sales y Capital Markets se convierte en un factor clave para garantizar una ejecución eficiente y maximizar el valor de la operación.',
     },
     {
-      name: 'Riesgos',
-      title: 'Los puntos débiles, a la vista.',
-      body: 'Hemos revisado Cobega I a fondo y lo hemos puesto por escrito en «Lo que vemos en Cobega I». Mejor conocer hoy lo que puede fallar.',
+      name: 'Reporting',
+      title: 'Transparencia institucional.',
+      body: 'Reporting institucional de calidad con criterio INREV para los inversores. Seguimiento continuo de la operación con total transparencia en cada fase del proceso.',
     },
     {
-      name: 'Ritmo y normativa',
-      title: 'Una vivienda tras otra, con orden.',
-      body: 'Los plazos, los derechos de tanteo y la Ley de Vivienda 12/2023 marcan el calendario. La prisa no.',
+      name: 'Tecnología',
+      title: 'Plataforma propia. Ventaja real.',
+      body: 'Savills ha desarrollado una plataforma tecnológica propia que proporciona reporting en tiempo real, total transparencia y un seguimiento continuo de la operación. Datos accionables cuando se necesitan.',
     },
     {
-      name: 'Decisión',
-      title: 'Las reglas, escritas antes de empezar.',
-      body: 'ASSET SOVEREIGN™ define qué aprueba PATRIZIA, qué gestionamos nosotros y en qué momento. Cuando lleguen los nuevos propietarios, cada uno sabrá cuál es su papel.',
+      name: 'Escala',
+      title: 'Experiencia que se mide en números.',
+      body: 'Más de 4.500 unidades residenciales gestionadas y comercializadas, y 6.000 unidades residenciales bajo privatización. Savills aporta la escala, experiencia y capacidad necesarias.',
     },
     {
-      name: 'Inversores y día a día',
-      title: 'LPs informados y un edificio que funciona.',
-      body: 'Informes periódicos con criterio INREV para los inversores, y una gestión diaria de la comunidad y de cada comprador que no quita tiempo a lo importante.',
+      name: 'Socio estratégico',
+      title: 'Más allá de la venta.',
+      body: 'Un equipo senior con mucha experiencia que no solo acompaña a PATRIZIA en la venta de los activos, sino que actúa como socio estratégico capaz de coordinar todo el proceso de creación de valor.',
     },
   ],
 };
 
 export const ESCENARIOS = {
-  eyebrow: '03 · Escenarios',
-  title: 'Tres ritmos para un mismo edificio.',
-  body: 'Cada escenario tiene su calendario y su resultado esperado. PATRIZIA elige con los tres delante.',
+  eyebrow: '03 · El modelo Savills',
+  title: '¿Qué socio integra todo bajo una única estrategia?',
+  body: 'Todos los equipos especializados in-house, con coordinación transversal entre Capital Markets, Property Management y Residential Sales. La respuesta es Savills.',
   items: [
-    { k: 'Prudente', v: 'Menos viviendas por trimestre y más margen para reaccionar al mercado.' },
-    { k: 'Base', v: 'Un ritmo de venta sostenido, alineado con la demanda del barrio.' },
-    { k: 'Ambicioso', v: 'Más velocidad de venta, con los controles de decisión reforzados.' },
+    { k: 'Capital Markets', v: 'Estrategia de desinversión, valoración y acceso a inversores institucionales.' },
+    { k: 'Property Management', v: 'Gestión operativa del activo y de la comunidad de propietarios durante el proceso.' },
+    { k: 'Residential Sales', v: 'Comercialización de las viviendas con ritmo, criterio y seguimiento continuo.' },
   ],
-  note: 'Cifras y calendario de cada escenario en el modelo financiero.',
+  note: 'Un único interlocutor para PATRIZIA a lo largo de toda la operación.',
 };
 
 export const FICHA = {
   eyebrow: '04 · Ficha de la propuesta',
-  title: 'Lo que recibe PATRIZIA.',
+  title: 'Una solución integral.',
   rows: [
-    { k: 'Activo', v: 'Cobega I, edificio residencial en Sant Martí, Barcelona' },
-    { k: 'Transición', v: 'Del alquiler (BTR) a la venta por viviendas (BTS)' },
-    { k: 'Gobernanza', v: 'ASSET SOVEREIGN™: reglas de decisión, aprobaciones y plazos' },
-    { k: 'Transparencia', v: 'Carta de compromisos por escrito' },
-    { k: 'Análisis', v: 'Documento «Lo que vemos en Cobega I»' },
-    { k: 'Modelo financiero', v: 'Tres escenarios con impacto en NOI y VAN' },
-    { k: 'Reporting', v: 'Informes periódicos a LPs con criterio INREV' },
-    { k: 'Normativa', v: 'Ley de Vivienda 12/2023 y normativa catalana (DOGC)' },
-    { k: 'Gestión diaria', v: 'Comunidad de propietarios y atención al comprador' },
+    { k: 'Activo', v: 'Cobega I, dos activos residenciales en Barcelona' },
+    { k: 'Objetivo', v: 'Maximizar el valor de la desinversión' },
+    { k: 'Comercialización', v: 'Estrategia eficiente con Residential Sales' },
+    { k: 'Gestión operativa', v: 'Property Management alineado con la venta' },
+    { k: 'Coordinación', v: 'Capital Markets + PM + Residential Sales in-house' },
+    { k: 'Reporting', v: 'Tiempo real, criterio INREV, total transparencia' },
+    { k: 'Plataforma', v: 'Tecnología propia Savills para seguimiento continuo' },
+    { k: 'Unidades gestionadas', v: '+4.500 residenciales gestionadas y comercializadas' },
+    { k: 'Privatizaciones', v: '+6.000 unidades residenciales bajo privatización' },
   ],
 };
 
 export const CIERRE = {
   eyebrow: '05 · Cierre',
-  title: 'Cuando se venda la última vivienda, la decisión seguirá siendo de PATRIZIA.',
-  line: 'Vender pisos es fácil. Lo difícil es seguir mandando.',
+  title: 'Una solución que simplifica la gestión, mejora la experiencia y maximiza el resultado.',
+  line: 'Un único interlocutor, una única estrategia y un objetivo común: maximizar el valor para PATRIZIA.',
   foot: 'Cobega I · Propuesta confidencial para PATRIZIA · 2026',
 };
