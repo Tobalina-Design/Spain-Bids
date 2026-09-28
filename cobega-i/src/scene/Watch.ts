@@ -338,8 +338,8 @@ export class Watch {
     const nrm = nautilusDialNormal();
     nrm.wrapS = nrm.wrapT = THREE.RepeatWrapping;
     const dialMat = new THREE.MeshPhysicalMaterial({
-      map: nautilusDial(), normalMap: nrm, normalScale: new THREE.Vector2(0.9, 0.9),
-      color: 0xffffff, metalness: 0.35, roughness: 0.34, clearcoat: 0.35, clearcoatRoughness: 0.2, envMapIntensity: 0.7,
+      map: nautilusDial(), normalMap: nrm, normalScale: new THREE.Vector2(0.5, 0.5),
+      color: 0xffffff, metalness: 0, roughness: 0.85, clearcoat: 0, envMapIntensity: 0.1,
     });
     this.add('dial', dg, dialMat, [0, 0, Z_DIAL]);
     this.printTex = drawDialPrint(null);
@@ -389,8 +389,8 @@ export class Watch {
 
     /* ===== cristal de zafiro plano ===== */
     const glass = new THREE.MeshPhysicalMaterial({
-      color: 0xffffff, metalness: 0, roughness: 0.01, transparent: true, opacity: 0.08,
-      clearcoat: 1, clearcoatRoughness: 0, envMapIntensity: 1.5, depthWrite: false,
+      color: 0xffffff, metalness: 0, roughness: 0.3, transparent: true, opacity: 0.02,
+      clearcoat: 0, envMapIntensity: 0.08, depthWrite: false,
     });
     this.add('crystal', extrude(roundedPoly(octa(A - 0.3, B - 0.3, C - 0.1), RI, 16), [], 0.03, 0), glass, [0, 0, -0.05]);
 
@@ -475,7 +475,7 @@ export class Watch {
     const cbOuter = roundedPoly(octa(A - 0.08, B - 0.08, C), RO, 14);
     const cbHole = Array.from({ length: 96 }, (_, i) => new THREE.Vector2(Math.cos((i / 96) * TAU) * 1.42, Math.sin((i / 96) * TAU) * 1.42));
     this.add('caseback', extrude(cbOuter, [cbHole], 0.06, 0.03, 2), [cbMat, polished(0xd8dadd, 0.08)], [0, 0, 0.0]);
-    const cbGlass = new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: 0, transparent: true, opacity: 0.08, clearcoat: 0.6, depthWrite: false, envMapIntensity: 0.9 });
+    const cbGlass = new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: 0, transparent: true, opacity: 0.04, clearcoat: 0.2, depthWrite: false, envMapIntensity: 0.3 });
     this.add('caseback', zcyl(1.43, 0.04, 96), cbGlass, [0, 0, 0.05]);
   }
 

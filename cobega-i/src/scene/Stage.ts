@@ -34,9 +34,9 @@ function buildEnv(renderer: THREE.WebGLRenderer) {
     m.lookAt(0, 0, 0);
     s.add(m);
   };
-  add(2.2, 20, [-8, 1, 6], 7);
-  add(1.6, 20, [9, -1, 4], 4.5);
-  add(16, 2.4, [0, 10, 5], 5);
+  add(2.2, 20, [-8, 1, 6], 3.6);
+  add(1.6, 20, [9, -1, 4], 2.4);
+  add(16, 2.4, [0, 10, 5], 2.6);
   add(6, 6, [2, 3, 12], 1.4);
   add(14, 8, [0, 0, -12], 0.5);
   add(22, 2, [0, -9, 2], 0.8);
@@ -84,7 +84,7 @@ export class Stage {
     this.renderer.toneMappingExposure = 1.02;
     this.renderer.setClearColor(0x000000, 0);
     this.scene.environment = buildEnv(this.renderer);
-    const key = new THREE.DirectionalLight(0xffffff, 0.9);
+    const key = new THREE.DirectionalLight(0xffffff, 0.6);
     key.position.set(-4, 6, 8);
     this.scene.add(key);
     this.scene.add(new THREE.AmbientLight(0xffffff, 0.08));
