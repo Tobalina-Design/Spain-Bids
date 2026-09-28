@@ -12,7 +12,7 @@ export type SectionId = (typeof SECTIONS)[number]['id'];
 export const HERO = {
   eyebrow: 'Propuesta para PATRIZIA · Sant Martí, Barcelona',
   title: 'COBEGA I',
-  lead: 'Una oportunidad para maximizar el valor de la desinversión en un mercado donde la demanda supera con creces la oferta.',
+  lead: 'Como un reloj de precisión, cada equipo tiene su función. Juntos, sincronizan la desinversión para maximizar el valor de PATRIZIA.',
 };
 
 export const ACTIVO = {
@@ -32,7 +32,7 @@ export const ACTIVO = {
 
 export const PROPUESTA = {
   eyebrow: '02 · La propuesta',
-  title: 'Un único interlocutor. Una única estrategia.',
+  title: 'Seis piezas. Un único mecanismo.',
   steps: [
     {
       name: 'Información',
@@ -69,8 +69,8 @@ export const PROPUESTA = {
 
 export const ESCENARIOS = {
   eyebrow: '03 · El modelo Savills',
-  title: '¿Qué socio integra todo bajo una única estrategia?',
-  body: 'Todos los equipos especializados in-house, con coordinación transversal entre Capital Markets, Property Management y Residential Sales. La respuesta es Savills.',
+  title: 'Tres equipos. Una sola cadencia.',
+  body: 'Un reloj no funciona si una pieza falla. Capital Markets, Property Management y Residential Sales trabajan en sincronía, in-house, bajo un único interlocutor.',
   items: [
     { k: 'Capital Markets', v: 'Estrategia de desinversión, valoración y acceso a inversores institucionales.' },
     { k: 'Property Management', v: 'Gestión operativa del activo y de la comunidad de propietarios durante el proceso.' },
@@ -97,7 +97,7 @@ export const FICHA = {
 
 export const CIERRE = {
   eyebrow: '05 · Cierre',
-  title: 'Una solución que simplifica la gestión, mejora la experiencia y maximiza el resultado.',
+  title: 'Cuando todas las piezas encajan, el resultado es exacto.',
   line: 'Un único interlocutor, una única estrategia y un objetivo común: maximizar el valor para PATRIZIA.',
   foot: 'Cobega I · Propuesta confidencial para PATRIZIA · 2026',
 };
