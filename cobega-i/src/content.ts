@@ -6,6 +6,7 @@ export const SECTIONS = [
   { id: 'activo' },
   { id: 'propuesta' },
   { id: 'escenarios' },
+  { id: 'app' },
   { id: 'ficha' },
   { id: 'cierre' },
 ] as const;
@@ -40,6 +41,15 @@ export type Copy = {
   activo: { eyebrow: string; title: string; body: string[]; facts: Pair[] };
   propuesta: { eyebrow: string; title: string; steps: Step[] };
   escenarios: { eyebrow: string; title: string; body: string; items: Pair[]; note: string };
+  app: {
+    eyebrow: string; title: string; lead: string; demo: string; open: string;
+    kpi: { sold: string; price: string; months: string; leads: string };
+    phaseLabel: string; phases: { name: string; aud: string }[];
+    paceLabel: string; paces: string[];
+    approve: string; approveLast: string; gate: string;
+    curve: string; plan: string; forecast: string; units: string; mo: string; today: string;
+    feedTitle: string; feed: string[][]; approved: string; unitWord: string;
+  };
   ficha: { eyebrow: string; title: string; rows: Pair[] };
   cierre: { eyebrow: string; title: string; line: string; foot: string };
 };
@@ -53,6 +63,7 @@ const ES: Copy = {
     activo: 'El contexto',
     propuesta: 'La propuesta',
     escenarios: 'El modelo',
+    app: 'Cobega Live',
     ficha: 'Ficha',
     cierre: 'Cierre',
   },
@@ -138,8 +149,43 @@ const ES: Copy = {
     ],
     note: 'Un único interlocutor para PATRIZIA a lo largo de toda la operación.',
   },
+  app: {
+    eyebrow: '04 · Cobega Live',
+    title: 'Su activo, en directo. Y bajo su control.',
+    lead: 'La estrategia de marketing, fase a fase, en una app: PATRIZIA ve cada venta, ajusta el ritmo y aprueba cada oleada antes de que salga al mercado.',
+    demo: 'Demo · datos ilustrativos',
+    open: 'En directo',
+    kpi: { sold: 'Vendidas', price: 'Precio vs. objetivo', months: 'Meses al cierre', leads: 'Visitas 3D · 7 d' },
+    phaseLabel: 'Fase activa',
+    phases: [
+      { name: 'Preparar', aud: 'Contenido y dossier' },
+      { name: 'Inquilinos', aud: 'Primero, sin presión' },
+      { name: 'Inversores', aud: 'Preventa discreta' },
+      { name: 'Lanzamiento', aud: 'Mercado, por oleadas' },
+    ],
+    paceLabel: 'Ritmo de venta',
+    paces: ['Prudente', 'Plan', 'Acelerado'],
+    approve: 'Aprobar oleada',
+    approveLast: 'Última fase en curso',
+    gate: 'Aprobación PATRIZIA',
+    curve: 'Ventas acumuladas',
+    plan: 'Plan',
+    forecast: 'Previsión',
+    units: 'viv.',
+    mo: 'meses',
+    today: 'hoy',
+    feedTitle: 'Actividad',
+    unitWord: 'Vivienda',
+    approved: 'PATRIZIA aprueba la oleada · pasa a',
+    feed: [
+      ['Dossier inversor publicado', 'Tour 3D de la vivienda piloto listo', 'Cobega Live conectado al CRM'],
+      ['Carta entregada · reunión agendada', 'Simulador de cuota abierto', 'Reserva de inquilino', 'Hipoteca preaprobada'],
+      ['Acceso al data room', 'Reserva · preventa de vacía', 'Visita virtual completada', 'Oferta de bloque recibida'],
+      ['Nuevo contacto desde portales', 'Visita a la jornada de puertas abiertas', 'Reserva en oleada abierta', 'Pico de visitas tras campaña'],
+    ],
+  },
   ficha: {
-    eyebrow: '04 · Ficha de la propuesta',
+    eyebrow: '05 · Ficha de la propuesta',
     title: 'Una solución integral.',
     rows: [
       { k: 'Activo', v: 'Cobega I, dos activos residenciales en Barcelona' },
@@ -154,7 +200,7 @@ const ES: Copy = {
     ],
   },
   cierre: {
-    eyebrow: '05 · Cierre',
+    eyebrow: '06 · Cierre',
     title: 'Cuando todas las piezas encajan, el resultado es exacto.',
     line: 'Un único interlocutor, una única estrategia y un objetivo común: maximizar el valor para PATRIZIA.',
     foot: 'Cobega I · Propuesta confidencial para PATRIZIA · 2026',
@@ -170,6 +216,7 @@ const EN: Copy = {
     activo: 'The context',
     propuesta: 'The proposal',
     escenarios: 'The model',
+    app: 'Cobega Live',
     ficha: 'Summary',
     cierre: 'Closing',
   },
@@ -255,8 +302,43 @@ const EN: Copy = {
     ],
     note: 'A single point of contact for PATRIZIA throughout the transaction.',
   },
+  app: {
+    eyebrow: '04 · Cobega Live',
+    title: 'Your asset, live. And under your control.',
+    lead: 'The marketing strategy, phase by phase, in one app: PATRIZIA sees every sale, tunes the pace and approves each wave before it reaches the market.',
+    demo: 'Demo · illustrative data',
+    open: 'Live',
+    kpi: { sold: 'Sold', price: 'Price vs. target', months: 'Months to close', leads: '3D visits · 7 d' },
+    phaseLabel: 'Active phase',
+    phases: [
+      { name: 'Prepare', aud: 'Content and dossier' },
+      { name: 'Tenants', aud: 'First, no pressure' },
+      { name: 'Investors', aud: 'Discreet pre-sale' },
+      { name: 'Launch', aud: 'Market, in waves' },
+    ],
+    paceLabel: 'Sales pace',
+    paces: ['Prudent', 'Plan', 'Accelerated'],
+    approve: 'Approve wave',
+    approveLast: 'Final phase under way',
+    gate: 'PATRIZIA approval',
+    curve: 'Cumulative sales',
+    plan: 'Plan',
+    forecast: 'Forecast',
+    units: 'units',
+    mo: 'months',
+    today: 'today',
+    feedTitle: 'Activity',
+    unitWord: 'Unit',
+    approved: 'PATRIZIA approves the wave · moving to',
+    feed: [
+      ['Investor dossier published', '3D tour of the show flat ready', 'Cobega Live linked to the CRM'],
+      ['Letter delivered · meeting booked', 'Mortgage simulator opened', 'Tenant reservation', 'Mortgage pre-approved'],
+      ['Data room access', 'Reservation · vacant unit pre-sale', 'Virtual visit completed', 'Block offer received'],
+      ['New lead from portals', 'Open-house visit', 'Reservation in open wave', 'Visit spike after campaign'],
+    ],
+  },
   ficha: {
-    eyebrow: '04 · Proposal summary',
+    eyebrow: '05 · Proposal summary',
     title: 'An integrated solution.',
     rows: [
       { k: 'Asset', v: 'Cobega I, two residential assets in Barcelona' },
@@ -271,7 +353,7 @@ const EN: Copy = {
     ],
   },
   cierre: {
-    eyebrow: '05 · Closing',
+    eyebrow: '06 · Closing',
     title: 'When every piece fits, the result is exact.',
     line: 'One point of contact, one strategy and a shared goal: to maximise value for PATRIZIA.',
     foot: 'Cobega I · Confidential proposal for PATRIZIA · 2026',

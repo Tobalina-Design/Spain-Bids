@@ -18,6 +18,7 @@ const S: Record<string, SceneState> = {
   p0:     { rx: -0.95, ry: 0.5,        rz: 0.28,  dist: 27,   sx: 0.2,  sy: -0.19, E: 0, br: 1 },
   p3:     { rx: -0.45, ry: 1.9,        rz: 0.1,   dist: 16,   sx: 0.02,  sy: -0.2,  E: 0, br: 1 },
   esc:    { rx: -0.28, ry: Math.PI - 0.75, rz: -0.05, dist: 13.8, sx: -0.24, sy: -0.22, E: 0, br: 1 },
+  app:    { rx: -0.2,  ry: TAU - 1.2,  rz: 0.03,  dist: 15,   sx: 0.3,   sy: -0.3,  E: 0, br: 1 },
   ficha:  { rx: -0.2,  ry: TAU - 0.55, rz: 0.05,  dist: 15,   sx: 0.32,  sy: -0.3,  E: 0, br: 1 },
   cierre: { rx: -0.06, ry: TAU - 0.22, rz: 0.02,  dist: 12.5, sx: 0.23,  sy: -0.12, E: 0, br: 1 },
 };
@@ -29,7 +30,7 @@ const STEP_POSE: SceneState[] = STEP_RX.map((rx, i) => ({
   rx, ry: STEP_RY[i], rz: 0.28 - i * 0.02, dist: 27, sx: 0.2, sy: -0.19, E: 1, br: 0,
 }));
 
-type Anchor = { y: number; s: SceneState; dimMobile: number };
+type Anchor = { y: number; s: SceneState; dimMobile: number; dimDesk?: number };
 type Stop = { y: number; id?: string; step?: number };
 
 const easeInOut = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
@@ -80,6 +81,9 @@ export function createEngine(canvas: HTMLCanvasElement, cb: EngineCallbacks) {
     const ficha = el('ficha');
     const fichaTop = ficha ? ficha.offsetTop - vh * 0.35 : max;
 
+    const app = el('app');
+    const appTop = app ? app.offsetTop : max;
+    const appBot = app ? app.offsetTop + app.offsetHeight : max;
     const list: Anchor[] = [
       { y: 0, s: S.hero, dimMobile: 1 },
       { y: center('activo'), s: S.activo, dimMobile: 1 },
@@ -89,6 +93,9 @@ export function createEngine(canvas: HTMLCanvasElement, cb: EngineCallbacks) {
       { y: sticky.start + sticky.len * OUTRO, s: STEP_POSE[STEPS - 1], dimMobile: 1 },
       { y: sticky.start + sticky.len, s: S.p3, dimMobile: 1 },
       { y: center('escenarios'), s: S.esc, dimMobile: 1 },
+      { y: appTop - vh * 0.4, s: S.esc, dimMobile: 0.18, dimDesk: 1 },
+      { y: center('app'), s: S.app, dimMobile: 0.18, dimDesk: 0.1 },
+      { y: appBot - vh * 0.6, s: S.app, dimMobile: 0.18, dimDesk: 0.1 },
       { y: fichaTop, s: S.ficha, dimMobile: 0.18 },
       { y: center('ficha'), s: S.ficha, dimMobile: 0.18 },
       { y: max, s: S.cierre, dimMobile: 1 },
@@ -106,6 +113,7 @@ export function createEngine(canvas: HTMLCanvasElement, cb: EngineCallbacks) {
       { y: center('activo'), id: 'activo' },
       ...Array.from({ length: STEPS }, (_, i) => ({ y: stepY(i), step: i, id: i === 0 ? 'propuesta' : undefined })),
       { y: center('escenarios'), id: 'escenarios' },
+      { y: center('app'), id: 'app' },
       { y: center('ficha'), id: 'ficha' },
       { y: max, id: 'cierre' },
     ];
@@ -125,18 +133,19 @@ export function createEngine(canvas: HTMLCanvasElement, cb: EngineCallbacks) {
   }
 
   function sample(y: number) {
-    if (y <= anchors[0].y) return { s: anchors[0].s, dm: anchors[0].dimMobile };
+    const dd = (a: Anchor) => (stage.mobile ? a.dimMobile : a.dimDesk ?? 1);
+    if (y <= anchors[0].y) return { s: anchors[0].s, dm: dd(anchors[0]) };
     for (let i = 1; i < anchors.length; i++) {
       const a = anchors[i - 1], b = anchors[i];
       if (y <= b.y) {
         const t = easeInOut((y - a.y) / (b.y - a.y));
         const s = {} as SceneState;
         (Object.keys(a.s) as (keyof SceneState)[]).forEach((k) => { s[k] = a.s[k] + (b.s[k] - a.s[k]) * t; });
-        return { s, dm: a.dimMobile + (b.dimMobile - a.dimMobile) * t };
+        return { s, dm: dd(a) + (dd(b) - dd(a)) * t };
       }
     }
     const l = anchors[anchors.length - 1];
-    return { s: l.s, dm: l.dimMobile };
+    return { s: l.s, dm: dd(l) };
   }
 
   /* ---------- desplazamiento a una parada ---------- */
@@ -179,7 +188,7 @@ export function createEngine(canvas: HTMLCanvasElement, cb: EngineCallbacks) {
     if (!snapOn() || !stops.length) { cursor = nearest(window.scrollY); return; }
     const y = window.scrollY;
     const firstStep = stops.findIndex((s) => s.step === 0);
-    const escIdx = stops.findIndex((s) => s.id === 'escenarios');
+    const escIdx = stops.findIndex((s) => s.id === 'app');
     const zoneA = stops[firstStep].y - vh * 1.4;
     const zoneB = stops[escIdx].y + 2;
     if (y < zoneA || y > zoneB) { cursor = nearest(y); return; }
@@ -223,7 +232,7 @@ export function createEngine(canvas: HTMLCanvasElement, cb: EngineCallbacks) {
     stage.target = s;
 
     const k = reduce ? 1 : 1 - Math.exp(-dt * 3);
-    dim += ((stage.mobile ? dm : 1) - dim) * k;
+    dim += (dm - dim) * k;
     canvas.style.opacity = dim.toFixed(3);
 
     const p = (y - sticky.start) / sticky.len;

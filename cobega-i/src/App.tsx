@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { createEngine, type Engine } from './engine';
+import LiveApp from './LiveApp';
 import { SECTIONS, COPY, initialLang, saveLang, type Lang, type SectionId } from './content';
 
 function useMadridTime(locale: string) {
@@ -48,7 +49,7 @@ export default function App() {
   const [glError, setGlError] = useState(false);
   const [lang, setLangState] = useState<Lang>(initialLang);
   const C = COPY[lang];
-  const { hero: HERO, activo: ACTIVO, propuesta: PROPUESTA, escenarios: ESCENARIOS, ficha: FICHA, cierre: CIERRE, ui } = C;
+  const { hero: HERO, activo: ACTIVO, propuesta: PROPUESTA, escenarios: ESCENARIOS, app: APP, ficha: FICHA, cierre: CIERRE, ui } = C;
   const time = useMadridTime(C.timeLocale);
 
   const setLang = useCallback((l: Lang) => {
@@ -266,6 +267,17 @@ export default function App() {
               ))}
             </ul>
             <p className="note">{ESCENARIOS.note}</p>
+          </div>
+        </section>
+
+        <section id="app" className="sec app-sec">
+          <div className="app-wrap" data-reveal>
+            <div className="app-head">
+              <p className="eyebrow">{APP.eyebrow}</p>
+              <h2>{APP.title}</h2>
+              <p className="body">{APP.lead}</p>
+            </div>
+            <LiveApp t={APP} />
           </div>
         </section>
 

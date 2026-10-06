@@ -215,6 +215,70 @@ h2.big { font-size: clamp(2rem, 3.8vw, 3.9rem); }
 .end { display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem 2rem; padding-top: 1.6rem; border-top: 1px solid var(--line); }
 .foot { margin: 0; font: 400 .64rem/1.6 var(--f-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--grey); }
 
+
+/* ---------- Cobega Live (app) ---------- */
+.app-sec { justify-content: center; padding: 10vh var(--gut); }
+.app-wrap { width: min(74rem, 100%); display: grid; grid-template-columns: minmax(0, 21rem) minmax(0, 1fr); gap: 2.6rem; align-items: center; }
+.app-head h2 { margin-bottom: 1.2rem; }
+.lapp { background: rgba(8,8,8,.88); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border: 1px solid var(--line); padding: 1rem 1.1rem 1.1rem; min-width: 0; }
+.lapp p { margin: 0; }
+.lapp-bar { display: flex; align-items: center; gap: 1rem; padding-bottom: .8rem; border-bottom: 1px solid var(--line); font: 400 .64rem/1 var(--f-mono); letter-spacing: .18em; text-transform: uppercase; }
+.lapp-brand { display: inline-flex; align-items: center; gap: .6rem; color: var(--ink); }
+.lapp-brand i { width: .9rem; height: .9rem; border: 1px solid var(--ink); border-radius: 50%; position: relative; }
+.lapp-brand i::after { content: ''; position: absolute; left: 50%; top: 18%; width: 1px; height: 36%; background: var(--ink); }
+.lapp-live { display: inline-flex; align-items: center; gap: .45rem; color: var(--grey-l); }
+.lapp-live i { width: .4rem; height: .4rem; border-radius: 50%; background: var(--ink); animation: blink 1.8s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: .2; } }
+.lapp-demo { margin-left: auto; color: var(--grey); }
+.lapp-phases { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; padding: .9rem 0; }
+.lapp-phases button { all: unset; box-sizing: border-box; cursor: pointer; display: grid; gap: .15rem; padding: .6rem .7rem .7rem; border: 1px solid var(--line); color: var(--grey); transition: border-color .5s, color .5s, background .5s; position: relative; }
+.lapp-phases button:focus-visible { outline: 1px solid var(--ink); outline-offset: 2px; }
+.lapp-phases .n { font: 400 .6rem/1 var(--f-mono); letter-spacing: .18em; }
+.lapp-phases b { font: 500 .86rem/1.2 var(--f-body); color: inherit; }
+.lapp-phases small { font: 400 .68rem/1.3 var(--f-body); color: var(--grey); }
+.lapp-phases .past { color: var(--grey-l); }
+.lapp-phases .on { color: var(--ink); border-color: var(--ink); background: rgba(241,241,239,.06); }
+.lapp-phases .on small { color: var(--grey-l); }
+.lapp-kpis { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); }
+.lapp-kpis > div { padding: .75rem .8rem; display: grid; gap: .3rem; align-content: start; }
+.lapp-kpis > div + div { border-left: 1px solid var(--line); }
+.lapp-kpis small { font: 400 .58rem/1.2 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--grey); }
+.lapp-kpis b { font: 500 1.55rem/1 var(--f-display); font-variation-settings: 'wdth' 105; color: var(--ink); font-variant-numeric: tabular-nums; }
+.lapp-kpis em { font-style: normal; font-size: .8rem; color: var(--grey); margin-left: .15rem; }
+.lapp-kpis u { text-decoration: none; font: 400 .62rem/1 var(--f-mono); letter-spacing: .1em; color: var(--grey-l); }
+.lapp-kpis .bar { display: block; height: 2px; background: var(--line); }
+.lapp-kpis .bar i { display: block; height: 100%; background: var(--ink); transform-origin: 0 50%; }
+.lapp-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 1rem; margin-top: 1rem; }
+.lapp-chart { grid-row: span 2; border: 1px solid var(--line); padding: .8rem .9rem .5rem; min-width: 0; }
+.lapp-chart p, .lapp-ctl p, .lapp-feed p { display: flex; justify-content: space-between; font: 400 .6rem/1.2 var(--f-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--grey); margin-bottom: .6rem; }
+.lapp-chart p span { display: inline-flex; align-items: center; gap: .4rem; letter-spacing: .1em; }
+.lapp-chart .k-plan, .lapp-chart .k-fc { display: inline-block; width: 1rem; height: 0; border-top: 1px dashed var(--grey-l); margin-left: .5rem; }
+.lapp-chart .k-fc { border-top: 2px solid var(--ink); }
+.lapp-chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+.lapp-chart .grid { stroke: var(--line); stroke-width: 1; }
+.lapp-chart .plan { fill: none; stroke: var(--grey-l); stroke-width: 1.2; stroke-dasharray: 3 4; }
+.lapp-chart .fc { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }
+.lapp-chart .drop { stroke: var(--grey); stroke-width: 1; stroke-dasharray: 2 3; }
+.lapp-chart .dot { fill: var(--bg); stroke: var(--ink); stroke-width: 2; }
+.lapp-chart .lbl { fill: var(--grey-l); font: 400 9px var(--f-mono); letter-spacing: .14em; text-transform: uppercase; }
+.lapp-ctl { border: 1px solid var(--line); padding: .8rem .9rem .9rem; }
+.lapp-ctl .seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); margin-bottom: 1rem; }
+.lapp-ctl .seg button { all: unset; box-sizing: border-box; cursor: pointer; text-align: center; padding: .55rem .3rem; font: 400 .72rem/1.1 var(--f-body); color: var(--grey-l); transition: background .4s, color .4s; }
+.lapp-ctl .seg button + button { border-left: 1px solid var(--line); }
+.lapp-ctl .seg button.on { background: var(--ink); color: var(--bg); }
+.lapp-ctl .seg button:focus-visible, .lapp-ctl .approve:focus-visible { outline: 1px solid var(--ink); outline-offset: 2px; }
+.lapp-ctl .approve { all: unset; box-sizing: border-box; cursor: pointer; display: block; width: 100%; text-align: center; padding: .75rem .6rem; border: 1px solid var(--ink); color: var(--ink); font: 400 .66rem/1.3 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; transition: background .4s, color .4s; }
+.lapp-ctl .approve:hover:not(:disabled) { background: var(--ink); color: var(--bg); }
+.lapp-ctl .approve:disabled { border-color: var(--line); color: var(--grey); cursor: default; }
+.lapp-feed { border: 1px solid var(--line); padding: .8rem .9rem; min-width: 0; }
+.lapp-feed ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.lapp-feed li { display: grid; grid-template-columns: 4.2rem 1fr; gap: .6rem; font: 400 .74rem/1.35 var(--f-body); color: var(--grey-l); animation: fadeUp .8s var(--ease); }
+.lapp-feed li:first-child { color: var(--ink); }
+.lapp-feed time { font: 400 .62rem/1.5 var(--f-mono); color: var(--grey); font-variant-numeric: tabular-nums; }
+@media (max-width: 1180px) {
+  .app-wrap { grid-template-columns: 1fr; gap: 1.6rem; }
+}
+
 /* ---------- tablet y móvil ---------- */
 @media (max-width: 1180px) {
   .nav-links { display: none; }
@@ -248,6 +312,16 @@ h2.big { font-size: clamp(2rem, 3.8vw, 3.9rem); }
   .facts div:nth-child(even) { padding-left: .8rem; }
   .facts dd { font-size: .95rem; }
   .ledger div { grid-template-columns: 1fr; gap: .2rem; padding: .9rem 0; }
+
+  .app-sec { padding: 60svh 16px 12svh; }
+  .app-head { background: var(--panel); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding: 1.6rem 1.2rem 1.4rem; margin-bottom: 1rem; }
+  .lapp-phases { grid-template-columns: repeat(2, 1fr); }
+  .lapp-kpis { grid-template-columns: repeat(2, 1fr); }
+  .lapp-kpis > div:nth-child(3) { border-left: 0; }
+  .lapp-kpis > div:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .lapp-grid { grid-template-columns: 1fr; }
+  .lapp-chart { grid-row: auto; }
+  .lapp-demo { display: none; }
 
   .sticky { align-items: flex-end; padding: 0 16px calc(env(safe-area-inset-bottom, 0px) + 16px); }
   .prop { background: var(--panel); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding: 1.3rem 1.2rem 1.2rem; }
