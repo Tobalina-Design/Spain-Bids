@@ -1,20 +1,21 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { createEngine, type Engine } from './engine';
-import { SECTIONS, HERO, ACTIVO, PROPUESTA, ESCENARIOS, FICHA, CIERRE, type SectionId } from './content';
+import { SECTIONS, COPY, initialLang, saveLang, type Lang, type SectionId } from './content';
 
-function useMadridTime() {
-  const fmt = () => {
-    try {
-      return new Intl.DateTimeFormat('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit' }).format(new Date());
-    } catch {
-      return '';
-    }
-  };
-  const [t, setT] = useState(fmt);
+function useMadridTime(locale: string) {
+  const [t, setT] = useState('');
   useEffect(() => {
+    const fmt = () => {
+      try {
+        return new Intl.DateTimeFormat(locale, { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit' }).format(new Date());
+      } catch {
+        return '';
+      }
+    };
+    setT(fmt());
     const id = setInterval(() => setT(fmt()), 15000);
     return () => clearInterval(id);
-  }, []);
+  }, [locale]);
   return t;
 }
 
@@ -45,7 +46,26 @@ export default function App() {
   const [exploded, setExploded] = useState(false);
   const [menu, setMenu] = useState(false);
   const [glError, setGlError] = useState(false);
-  const time = useMadridTime();
+  const [lang, setLangState] = useState<Lang>(initialLang);
+  const C = COPY[lang];
+  const { hero: HERO, activo: ACTIVO, propuesta: PROPUESTA, escenarios: ESCENARIOS, ficha: FICHA, cierre: CIERRE, ui } = C;
+  const time = useMadridTime(C.timeLocale);
+
+  const setLang = useCallback((l: Lang) => {
+    setLangState(l);
+    saveLang(l);
+    try {
+      const u = new URL(window.location.href);
+      u.searchParams.set('lang', l);
+      window.history.replaceState(null, '', u);
+    } catch { /* sin historial */ }
+  }, []);
+
+  /* idioma del documento: lectores de pantalla, traducción automática y pestaña */
+  useEffect(() => {
+    document.documentElement.lang = C.htmlLang;
+    document.title = C.docTitle;
+  }, [C]);
 
   useEffect(() => {
     const n = makeNoise();
@@ -124,40 +144,45 @@ export default function App() {
           <circle cx="350" cy="350" r="345" className="ring-bg" />
           <circle cx="350" cy="350" r="345" className="ring-fg" />
         </svg>
-        <p className="loader-text"><span>Cargando</span> Cobega I</p>
+        <p className="loader-text"><span>{ui.loading}</span> Cobega I</p>
       </div>
 
       <div className="stage" aria-hidden="true">
         <div className="hero-word" ref={heroWordRef}>{HERO.title}</div>
         <canvas ref={canvasRef} className="gl" />
-        {glError && <div className="gl-fallback">Este navegador no puede mostrar el reloj en 3D. El contenido está completo abajo.</div>}
+        {glError && <div className="gl-fallback">{ui.glFallback}</div>}
       </div>
 
       <div className="topfade" aria-hidden="true" />
       <div className="botfade" aria-hidden="true" />
       <header className="nav">
-        <button type="button" className="brand" onClick={() => go('inicio')} aria-label="Volver al inicio">
-          <b>Cobega I</b><span>Para PATRIZIA</span>
+        <button type="button" className="brand" onClick={() => go('inicio')} aria-label={ui.backTop}>
+          <b>Cobega I</b><span>{ui.brandSub}</span>
         </button>
-        <nav className="nav-links" aria-label="Secciones">
+        <nav className="nav-links" aria-label={ui.sectionsAria}>
           {SECTIONS.slice(1).map((s) => (
-            <button key={s.id} type="button" className={section === s.id ? 'on' : ''} onClick={() => go(s.id)}>{s.label}</button>
+            <button key={s.id} type="button" className={section === s.id ? 'on' : ''} onClick={() => go(s.id)}>{C.sections[s.id]}</button>
           ))}
         </nav>
         <div className="nav-actions">
           <button type="button" className={'pill' + (exploded ? ' on' : '')} aria-pressed={exploded} onClick={() => setExploded((v) => !v)}>
-            <span className="pill-dot" />{exploded ? 'Montar' : 'Despiece'}
+            <span className="pill-dot" />{exploded ? ui.assemble : ui.explode}
           </button>
-          <button type="button" className="menu-btn" aria-expanded={menu} aria-controls="menu" onClick={() => setMenu(true)}>Índice</button>
+          <button type="button" className="menu-btn" aria-expanded={menu} aria-controls="menu" onClick={() => setMenu(true)}>{ui.index}</button>
+          <div className="lang" role="group" aria-label={ui.langAria}>
+            {(['es', 'en'] as Lang[]).map((l) => (
+              <button key={l} type="button" lang={l} className={l === lang ? 'on' : ''} aria-pressed={l === lang} onClick={() => setLang(l)}>{l.toUpperCase()}</button>
+            ))}
+          </div>
         </div>
       </header>
 
-      <div id="menu" className={'menu' + (menu ? ' open' : '')} role="dialog" aria-modal="true" aria-label="Índice" hidden={!menu}>
-        <button type="button" className="menu-close" onClick={() => setMenu(false)}>Cerrar</button>
+      <div id="menu" className={'menu' + (menu ? ' open' : '')} role="dialog" aria-modal="true" aria-label={ui.index} hidden={!menu}>
+        <button type="button" className="menu-close" onClick={() => setMenu(false)}>{ui.close}</button>
         <ol>
           {SECTIONS.map((s, i) => (
             <li key={s.id}>
-              <button type="button" onClick={() => go(s.id)}><span>{pad(i)}</span>{s.label}</button>
+              <button type="button" onClick={() => go(s.id)}><span>{pad(i)}</span>{C.sections[s.id]}</button>
             </li>
           ))}
         </ol>
@@ -166,9 +191,9 @@ export default function App() {
       <div className="hud" aria-hidden="true">
         <span className="hud-n">{pad(secIndex)} / {pad(SECTIONS.length - 1)}</span>
         <span className="hud-bar"><i style={{ transform: `scaleX(${secIndex / (SECTIONS.length - 1)})` }} /></span>
-        <span>{SECTIONS[secIndex]?.label}</span>
+        <span>{SECTIONS[secIndex] ? C.sections[SECTIONS[secIndex].id] : ''}</span>
       </div>
-      <div className="clock" aria-hidden="true">Barcelona <b>{time}</b></div>
+      <div className="clock" aria-hidden="true">{ui.clockCity} <b>{time}</b></div>
 
       <main>
         <section id="inicio" className="sec hero">
@@ -177,7 +202,7 @@ export default function App() {
             <h1 className="sr-only">{HERO.title}</h1>
             <p className="hero-lead">{HERO.lead}</p>
             <button type="button" className="scroll-cue" onClick={() => go('activo')}>
-              <span>Desliza para descubrir</span><i />
+              <span>{ui.cue}</span><i />
             </button>
           </div>
         </section>
@@ -222,7 +247,7 @@ export default function App() {
                 <p key={'b' + step} className="pm-body">{cur.body}</p>
                 <div className="pm-dots">
                   {PROPUESTA.steps.map((s, i) => (
-                    <button key={s.name} type="button" className={i === step ? 'on' : ''} aria-label={`Ir a ${s.name}`} onClick={() => engine.current?.scrollToStep(i)} />
+                    <button key={s.name} type="button" className={i === step ? 'on' : ''} aria-label={`${ui.goTo} ${s.name}`} onClick={() => engine.current?.scrollToStep(i)} />
                   ))}
                 </div>
               </div>
@@ -262,7 +287,7 @@ export default function App() {
             <h2 className="big">{CIERRE.title}</h2>
             <p className="line">{CIERRE.line}</p>
             <div className="end">
-              <button type="button" className="pill solid" onClick={() => go('inicio')}>Volver al inicio</button>
+              <button type="button" className="pill solid" onClick={() => go('inicio')}>{ui.start}</button>
               <p className="foot">{CIERRE.foot}</p>
             </div>
           </div>
