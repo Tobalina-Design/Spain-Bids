@@ -280,7 +280,9 @@ export class Watch {
     ], 0.62, 22);
     const caseSatin = satin(0xc9ccd0, 0.3, 0);
     const casePol = polished(0xd8dadd, 0.07);
-    const cg = extrude(caseOutline, [], Z_CASE1 - Z_CASE0 - 0.08, 0.04, 2);
+    /* abierta por dentro: su cara superior no puede coincidir con el plano de la esfera */
+    const caseHole = roundedPoly(octa(A - 0.22, B - 0.22, C - 0.08), RI, 16);
+    const cg = extrude(caseOutline, [caseHole], Z_CASE1 - Z_CASE0 - 0.08, 0.04, 2);
     this.add('case', cg, [caseSatin, casePol], [0, 0, Z_CASE0 + 0.04]);
     /* junta oscura entre carrura y bisel */
     const gap = extrude(roundedPoly(octa(A - 0.02, B - 0.02, C), RO, 14), [roundedPoly(octa(A - 0.3, B - 0.3, C - 0.1), RI, 14)], 0.012, 0);
@@ -338,8 +340,8 @@ export class Watch {
     const nrm = nautilusDialNormal();
     nrm.wrapS = nrm.wrapT = THREE.RepeatWrapping;
     const dialMat = new THREE.MeshPhysicalMaterial({
-      map: nautilusDial(), normalMap: nrm, normalScale: new THREE.Vector2(0.5, 0.5),
-      color: 0xffffff, metalness: 0, roughness: 0.85, clearcoat: 0, envMapIntensity: 0.1,
+      map: nautilusDial(), normalMap: nrm, normalScale: new THREE.Vector2(0.8, 0.8),
+      color: 0xffffff, metalness: 0.15, roughness: 0.6, clearcoat: 0, envMapIntensity: 0.22,
     });
     this.add('dial', dg, dialMat, [0, 0, Z_DIAL]);
     this.printTex = drawDialPrint(null);
