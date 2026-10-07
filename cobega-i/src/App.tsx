@@ -49,7 +49,7 @@ export default function App() {
   const [glError, setGlError] = useState(false);
   const [lang, setLangState] = useState<Lang>(initialLang);
   const C = COPY[lang];
-  const { hero: HERO, activo: ACTIVO, propuesta: PROPUESTA, escenarios: ESCENARIOS, app: APP, ficha: FICHA, cierre: CIERRE, ui } = C;
+  const { hero: HERO, activo: ACTIVO, propuesta: PROPUESTA, escenarios: ESCENARIOS, app: APP, marketing: MKT, ficha: FICHA, cierre: CIERRE, ui } = C;
   const time = useMadridTime(C.timeLocale);
 
   const setLang = useCallback((l: Lang) => {
@@ -267,6 +267,27 @@ export default function App() {
               ))}
             </ul>
             <p className="note">{ESCENARIOS.note}</p>
+          </div>
+        </section>
+
+        <section id="marketing" className="sec mkt-sec">
+          <div className="mkt-wrap" data-reveal>
+            <p className="eyebrow">{MKT.eyebrow}</p>
+            <h2>{MKT.title}</h2>
+            <p className="body">{MKT.lead}</p>
+            <ol className="mkt-grid">
+              {MKT.phases.map((p, i) => (
+                <li key={p.tag} className={i === 1 ? 'hl' : ''}>
+                  <span className="tag">{p.tag}</span>
+                  <h3>{p.name}</h3>
+                  <small>{p.aud}</small>
+                  <ul>
+                    {p.items.map((it) => <li key={it.k}><b>{it.k}</b><span>{it.v}</span></li>)}
+                  </ul>
+                </li>
+              ))}
+            </ol>
+            <p className="note">{MKT.foot}</p>
           </div>
         </section>
 

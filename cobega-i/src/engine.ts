@@ -81,6 +81,9 @@ export function createEngine(canvas: HTMLCanvasElement, cb: EngineCallbacks) {
     const ficha = el('ficha');
     const fichaTop = ficha ? ficha.offsetTop - vh * 0.35 : max;
 
+    const mk = el('marketing');
+    const mkTop = mk ? mk.offsetTop : max;
+    const mkBot = mk ? mk.offsetTop + mk.offsetHeight : max;
     const app = el('app');
     const appTop = app ? app.offsetTop : max;
     const appBot = app ? app.offsetTop + app.offsetHeight : max;
@@ -93,7 +96,10 @@ export function createEngine(canvas: HTMLCanvasElement, cb: EngineCallbacks) {
       { y: sticky.start + sticky.len * OUTRO, s: STEP_POSE[STEPS - 1], dimMobile: 1 },
       { y: sticky.start + sticky.len, s: S.p3, dimMobile: 1 },
       { y: center('escenarios'), s: S.esc, dimMobile: 1 },
-      { y: appTop - vh * 0.4, s: S.esc, dimMobile: 0.18, dimDesk: 1 },
+      { y: mkTop - vh * 0.4, s: S.esc, dimMobile: 0.18, dimDesk: 1 },
+      { y: center('marketing'), s: S.app, dimMobile: 0.18, dimDesk: 0.1 },
+      { y: mkBot - vh * 0.6, s: S.app, dimMobile: 0.18, dimDesk: 0.1 },
+      { y: appTop - vh * 0.4, s: S.app, dimMobile: 0.18, dimDesk: 0.1 },
       { y: center('app'), s: S.app, dimMobile: 0.18, dimDesk: 0.1 },
       { y: appBot - vh * 0.6, s: S.app, dimMobile: 0.18, dimDesk: 0.1 },
       { y: fichaTop, s: S.ficha, dimMobile: 0.18 },
@@ -113,6 +119,7 @@ export function createEngine(canvas: HTMLCanvasElement, cb: EngineCallbacks) {
       { y: center('activo'), id: 'activo' },
       ...Array.from({ length: STEPS }, (_, i) => ({ y: stepY(i), step: i, id: i === 0 ? 'propuesta' : undefined })),
       { y: center('escenarios'), id: 'escenarios' },
+      { y: center('marketing'), id: 'marketing' },
       { y: center('app'), id: 'app' },
       { y: center('ficha'), id: 'ficha' },
       { y: max, id: 'cierre' },

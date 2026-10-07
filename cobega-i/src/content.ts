@@ -6,6 +6,7 @@ export const SECTIONS = [
   { id: 'activo' },
   { id: 'propuesta' },
   { id: 'escenarios' },
+  { id: 'marketing' },
   { id: 'app' },
   { id: 'ficha' },
   { id: 'cierre' },
@@ -41,6 +42,7 @@ export type Copy = {
   activo: { eyebrow: string; title: string; body: string[]; facts: Pair[] };
   propuesta: { eyebrow: string; title: string; steps: Step[] };
   escenarios: { eyebrow: string; title: string; body: string; items: Pair[]; note: string };
+  marketing: { eyebrow: string; title: string; lead: string; phases: { tag: string; name: string; aud: string; items: Pair[] }[]; foot: string };
   app: {
     eyebrow: string; title: string; lead: string; demo: string; open: string;
     kpi: { sold: string; price: string; months: string; leads: string };
@@ -63,6 +65,7 @@ const ES: Copy = {
     activo: 'El contexto',
     propuesta: 'La propuesta',
     escenarios: 'El modelo',
+    marketing: 'Marketing',
     app: 'Cobega Live',
     ficha: 'Ficha',
     cierre: 'Cierre',
@@ -149,8 +152,36 @@ const ES: Copy = {
     ],
     note: 'Un único interlocutor para PATRIZIA a lo largo de toda la operación.',
   },
+  marketing: {
+    eyebrow: '04 · Marketing',
+    title: 'Marketing a medida del activo. Y del propietario.',
+    lead: '225 viviendas, 90 % ocupadas, de alquiler a venta. Vender caro sin tensionar al inquilino exige orden: cuatro fases, cada una con su audiencia.',
+    phases: [
+      { tag: 'Fase 0', name: 'Preparar', aud: 'Para ambas audiencias', items: [
+        { k: 'Contenido', v: 'web, vídeo y tour 3D' },
+        { k: 'Dossier', v: 'uno por audiencia' },
+        { k: 'Cobega Live', v: 'CRM único y app de control' },
+      ] },
+      { tag: 'Fase 1', name: 'Inquilinos', aud: 'Primero, sin presión', items: [
+        { k: 'Trato personal', v: 'carta y reunión' },
+        { k: 'Acceso privado', v: 'su vivienda, precio y simulador de cuota' },
+        { k: 'Ayuda para comprar', v: 'hipoteca con acuerdos bancarios' },
+      ] },
+      { tag: 'Fase 2', name: 'Inversores', aud: 'Preventa discreta', items: [
+        { k: 'Preventa discreta', v: 'vacías, red Savills y LinkedIn' },
+        { k: 'Visita virtual y data room', v: 'tour 3D, contratos, rentas y planos' },
+        { k: 'Seguimiento en directo', v: 'informe a la propiedad' },
+      ] },
+      { tag: 'Fase 3', name: 'Lanzamiento', aud: 'Inquilinos + inversores', items: [
+        { k: 'Portales, RRSS y prensa', v: 'tour 3D, dossier y enlace a la web' },
+        { k: 'Puertas abiertas', v: 'vivienda piloto + tour 3D' },
+        { k: 'Oleadas de precio', v: 'el stock restante, tramo a tramo' },
+      ] },
+    ],
+    foot: 'Cada fase, medida y controlada en directo con Cobega Live.',
+  },
   app: {
-    eyebrow: '04 · Cobega Live',
+    eyebrow: '05 · Cobega Live',
     title: 'Su activo, en directo. Y bajo su control.',
     lead: 'La estrategia de marketing, fase a fase, en una app: PATRIZIA ve cada venta, ajusta el ritmo y aprueba cada oleada antes de que salga al mercado.',
     demo: 'Demo · datos ilustrativos',
@@ -185,7 +216,7 @@ const ES: Copy = {
     ],
   },
   ficha: {
-    eyebrow: '05 · Ficha de la propuesta',
+    eyebrow: '06 · Ficha de la propuesta',
     title: 'Una solución integral.',
     rows: [
       { k: 'Activo', v: 'Cobega I, dos activos residenciales en Barcelona' },
@@ -200,7 +231,7 @@ const ES: Copy = {
     ],
   },
   cierre: {
-    eyebrow: '06 · Cierre',
+    eyebrow: '07 · Cierre',
     title: 'Cuando todas las piezas encajan, el resultado es exacto.',
     line: 'Un único interlocutor, una única estrategia y un objetivo común: maximizar el valor para PATRIZIA.',
     foot: 'Cobega I · Propuesta confidencial para PATRIZIA · 2026',
@@ -216,6 +247,7 @@ const EN: Copy = {
     activo: 'The context',
     propuesta: 'The proposal',
     escenarios: 'The model',
+    marketing: 'Marketing',
     app: 'Cobega Live',
     ficha: 'Summary',
     cierre: 'Closing',
@@ -302,8 +334,36 @@ const EN: Copy = {
     ],
     note: 'A single point of contact for PATRIZIA throughout the transaction.',
   },
+  marketing: {
+    eyebrow: '04 · Marketing',
+    title: 'Marketing tailored to the asset. And to the owner.',
+    lead: '225 homes, 90% occupied, moving from rental to sale. Selling high without pressuring tenants takes sequence: four phases, each with its own audience.',
+    phases: [
+      { tag: 'Phase 0', name: 'Prepare', aud: 'For both audiences', items: [
+        { k: 'Content', v: 'website, video and 3D tour' },
+        { k: 'Dossier', v: 'one per audience' },
+        { k: 'Cobega Live', v: 'single CRM and control app' },
+      ] },
+      { tag: 'Phase 1', name: 'Tenants', aud: 'First, no pressure', items: [
+        { k: 'Personal approach', v: 'letter and meeting' },
+        { k: 'Private access', v: 'their home, price and instalment simulator' },
+        { k: 'Help to buy', v: 'mortgage with bank agreements' },
+      ] },
+      { tag: 'Phase 2', name: 'Investors', aud: 'Discreet pre-sale', items: [
+        { k: 'Discreet pre-sale', v: 'vacant units, Savills network and LinkedIn' },
+        { k: 'Virtual visit and data room', v: '3D tour, contracts, rents and plans' },
+        { k: 'Live follow-up', v: 'report to the owner' },
+      ] },
+      { tag: 'Phase 3', name: 'Launch', aud: 'Tenants + investors', items: [
+        { k: 'Portals, social and press', v: '3D tour, dossier and web link' },
+        { k: 'Open house', v: 'show flat + 3D tour' },
+        { k: 'Price waves', v: 'remaining stock, tranche by tranche' },
+      ] },
+    ],
+    foot: 'Every phase, measured and controlled live with Cobega Live.',
+  },
   app: {
-    eyebrow: '04 · Cobega Live',
+    eyebrow: '05 · Cobega Live',
     title: 'Your asset, live. And under your control.',
     lead: 'The marketing strategy, phase by phase, in one app: PATRIZIA sees every sale, tunes the pace and approves each wave before it reaches the market.',
     demo: 'Demo · illustrative data',
@@ -338,7 +398,7 @@ const EN: Copy = {
     ],
   },
   ficha: {
-    eyebrow: '05 · Proposal summary',
+    eyebrow: '06 · Proposal summary',
     title: 'An integrated solution.',
     rows: [
       { k: 'Asset', v: 'Cobega I, two residential assets in Barcelona' },
@@ -353,7 +413,7 @@ const EN: Copy = {
     ],
   },
   cierre: {
-    eyebrow: '06 · Closing',
+    eyebrow: '07 · Closing',
     title: 'When every piece fits, the result is exact.',
     line: 'One point of contact, one strategy and a shared goal: to maximise value for PATRIZIA.',
     foot: 'Cobega I · Confidential proposal for PATRIZIA · 2026',

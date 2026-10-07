@@ -216,6 +216,25 @@ h2.big { font-size: clamp(2rem, 3.8vw, 3.9rem); }
 .foot { margin: 0; font: 400 .64rem/1.6 var(--f-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--grey); }
 
 
+
+/* ---------- Marketing ---------- */
+.mkt-sec { justify-content: center; padding: 10vh var(--gut); }
+.mkt-wrap { width: min(74rem, 100%); }
+.mkt-wrap h2 { max-width: 22ch; }
+.mkt-wrap .body { max-width: 40rem; }
+.mkt-grid { list-style: none; margin: 2rem 0 1.4rem; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); background: rgba(8,8,8,.86); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+.mkt-grid > li { padding: 1.1rem 1.1rem 1.3rem; display: grid; align-content: start; gap: .35rem; }
+.mkt-grid > li + li { border-left: 1px solid var(--line); }
+.mkt-grid .hl { background: rgba(241,241,239,.05); }
+.mkt-grid .tag { font: 400 .6rem/1 var(--f-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--grey); }
+.mkt-grid h3 { margin: .4rem 0 0; font-family: var(--f-display); font-weight: 700; font-variation-settings: 'wdth' 110; text-transform: uppercase; font-size: 1.35rem; line-height: 1.1; }
+.mkt-grid small { font: 400 .74rem/1.3 var(--f-body); color: var(--grey-l); padding-bottom: .9rem; margin-bottom: .3rem; border-bottom: 1px solid var(--line); }
+.mkt-grid ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .9rem; }
+.mkt-grid ul li { display: grid; gap: .15rem; }
+.mkt-grid ul b { font: 500 .9rem/1.25 var(--f-body); color: var(--ink); }
+.mkt-grid ul span { font: 400 .78rem/1.35 var(--f-body); color: var(--grey-l); }
+@media (max-width: 1180px) { .mkt-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .mkt-grid > li:nth-child(3) { border-left: 0; } .mkt-grid > li:nth-child(n+3) { border-top: 1px solid var(--line); } }
+
 /* ---------- Cobega Live (app) ---------- */
 .app-sec { justify-content: center; padding: 10vh var(--gut); }
 .app-wrap { width: min(74rem, 100%); display: grid; grid-template-columns: minmax(0, 21rem) minmax(0, 1fr); gap: 2.6rem; align-items: center; }
@@ -313,6 +332,10 @@ h2.big { font-size: clamp(2rem, 3.8vw, 3.9rem); }
   .facts dd { font-size: .95rem; }
   .ledger div { grid-template-columns: 1fr; gap: .2rem; padding: .9rem 0; }
 
+  .mkt-sec { padding: 60svh 16px 12svh; }
+  .mkt-wrap { background: var(--panel); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding: 1.6rem 1.2rem 1.4rem; }
+  .mkt-grid { grid-template-columns: 1fr; }
+  .mkt-grid > li + li, .mkt-grid > li:nth-child(3) { border-left: 0; border-top: 1px solid var(--line); }
   .app-sec { padding: 60svh 16px 12svh; }
   .app-head { background: var(--panel); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding: 1.6rem 1.2rem 1.4rem; margin-bottom: 1rem; }
   .lapp-phases { grid-template-columns: repeat(2, 1fr); }
