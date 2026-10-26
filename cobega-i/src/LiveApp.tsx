@@ -8,6 +8,7 @@ const PACE_PRICE = [1.6, 0, -2.8];         // prudente / plan / acelerado
 const PACE_MONTHS = [15, 11, 7.5];
 const LEADS = [38, 164, 291, 412];
 const MAXM = 16;
+const GAP = [6, 0, 9];
 
 const curve = (t: number, m: number) => {
   const k = 7.5 / m;
@@ -26,7 +27,7 @@ export default function LiveApp({ t }: { t: Copy['app'] }) {
 
   const stamp = () => new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const push = (text: string) =>
-    setFeed((f) => [{ id: ++tick.current, time: stamp(), text }, ...f].slice(0, 5));
+    setFeed((f) => [{ id: ++tick.current, time: stamp(), text }, ...f].slice(0, 3));
 
   /* las ventas se acercan despacio a la meta de la fase */
   useEffect(() => {
@@ -126,13 +127,21 @@ export default function LiveApp({ t }: { t: Copy['app'] }) {
         </div>
 
         <div className="lapp-ctl">
+          <p className="dec-t"><span>{t.dec.title}</span><i>{t.gate}</i></p>
+          <dl className="dec">
+            <div><dt>{t.dec.rows[0]}</dt><dd>{t.dec.lot}</dd></div>
+            <div><dt>{t.dec.rows[1]}</dt><dd>{t.dec.abs[pace].replace('{n}', String(GAP[pace]))}</dd></div>
+            <div><dt>{t.dec.rows[2]}</dt><dd>{fmt(delta)}</dd></div>
+            <div><dt>{t.dec.rows[3]}</dt><dd>{t.dec.recs[phase]}</dd></div>
+            <div><dt>{t.dec.rows[4]}</dt><dd>{fmt(delta)} · {m} {t.mo}</dd></div>
+            <div><dt>{t.dec.rows[5]}</dt><dd>{t.dec.risks[pace]}</dd></div>
+          </dl>
           <p>{t.paceLabel}</p>
           <div className="seg" role="group" aria-label={t.paceLabel}>
             {t.paces.map((p, i) => (
-              <button key={p} type="button" className={i === pace ? 'on' : ''} aria-pressed={i === pace} onClick={() => setPace(i)}>{p}</button>
+              <button key={p} type="button" className={i === pace ? 'on' : ''} aria-pressed={i === pace} onClick={() => { setPace(i); push(`${t.paceLabel} · ${p}`); }}>{p}</button>
             ))}
           </div>
-          <p className="gate">{t.gate}</p>
           <button type="button" className="approve" disabled={phase >= 3} onClick={approve}>
             {phase >= 3 ? t.approveLast : `${t.approve} → ${t.phases[Math.min(3, phase + 1)].name}`}
           </button>
